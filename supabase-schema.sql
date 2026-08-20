@@ -8,8 +8,12 @@ create table if not exists accounts (
   name text not null,
   type text not null default 'corriente',
   balance numeric not null default 0,
+  currency text not null default 'CHF',
   created_at timestamptz not null default now()
 );
+
+-- Si la tabla ya existía de antes (sin esta columna), esto la añade sin tocar tus datos.
+alter table accounts add column if not exists currency text not null default 'CHF';
 
 create table if not exists transactions (
   id uuid primary key default gen_random_uuid(),

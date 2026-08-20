@@ -1,15 +1,15 @@
 import { useMemo } from "react";
-import { C, fmt, monthOf } from "../lib/theme.js";
+import { C, fmt, monthOf, CURRENCIES } from "../lib/theme.js";
 import { Eyebrow, Stamp } from "./ui.jsx";
 
-export default function Resumen({ transactions, accounts, month, setMonth }) {
+export default function Resumen({ transactions, accounts, month, setMonth, displayCurrency, setDisplayCurrency, convert, ratesLoading }) {
   const monthTx = useMemo(() => transactions.filter((t) => monthOf(t.date) === month), [transactions, month]);
 
   const income = monthTx.filter((t) => t.type === "income").reduce((s, t) => s + Number(t.amount), 0);
   const fixed = monthTx.filter((t) => t.type === "fixed").reduce((s, t) => s + Number(t.amount), 0);
   const variable = monthTx.filter((t) => t.type === "variable").reduce((s, t) => s + Number(t.amount), 0);
   const balance = income - fixed - variable;
-  const patrimonio = accounts.reduce((s, a) => s + Number(a.balance), 0);
+  const patrimonio = accounts.reduce((s, a) => s + convert(a.balance, a.currency || "CHF", displayCurrency), 0);
 
   const byCategory = useMemo(() => {
     const map = {};
@@ -55,7 +55,32 @@ export default function Resumen({ transactions, accounts, month, setMonth }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-        <Stamp label="Patrimonio total (todas las cuentas)" value={patrimonio} tone="gold" big />
+        <div>
+          <Stamp label="Patrimonio total (todas las cuentas)" value={patrimonio} tone="gold" big currency={displayCurrency} />
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8, fontSize: 11, color: C.inkSoft, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            Ver en
+            <select
+              value={displayCurrency}
+              onChange={(e) => setDisplayCurrency(e.target.value)}
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 12.5,
+                padding: "5px 7px",
+                borderRadius: 3,
+                border: `1px solid ${C.rule}`,
+                background: C.card,
+                color: C.ink,
+              }}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {ratesLoading && <span style={{ fontSize: 10.5 }}>actualizando tipos…</span>}
+          </label>
+        </div>
         <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "16px 18px" }}>
           <Eyebrow>Cuentas registradas</Eyebrow>
           <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 22, fontWeight: 600, color: C.ink, marginTop: 6 }}>

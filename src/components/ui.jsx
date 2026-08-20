@@ -1,5 +1,4 @@
-import { C } from "../lib/theme.js";
-import { fmt } from "../lib/theme.js";
+import { C, fmt, CURRENCY } from "../lib/theme.js";
 
 export function Eyebrow({ children }) {
   return (
@@ -18,7 +17,7 @@ export function Eyebrow({ children }) {
   );
 }
 
-export function Stamp({ label, value, tone = "ink", big }) {
+export function Stamp({ label, value, tone = "ink", big, currency = CURRENCY }) {
   const color = tone === "income" ? C.income : tone === "expense" ? C.expense : tone === "gold" ? C.gold : C.ink;
   return (
     <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "16px 18px" }}>
@@ -35,7 +34,7 @@ export function Stamp({ label, value, tone = "ink", big }) {
           borderBottom: big ? `3px double ${C.ruleStrong}` : "none",
         }}
       >
-        {fmt(value)} <span style={{ fontSize: big ? 14 : 12, fontWeight: 500, color: C.inkSoft }}>CHF</span>
+        {fmt(value)} <span style={{ fontSize: big ? 14 : 12, fontWeight: 500, color: C.inkSoft }}>{currency}</span>
       </div>
     </div>
   );

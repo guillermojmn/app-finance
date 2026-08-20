@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { LayoutDashboard, BookText, Landmark, LogOut } from "lucide-react";
 import { supabase } from "./supabaseClient.js";
-import { C, FONT_IMPORT, todayISO } from "./lib/theme.js";
+import { C, FONT_IMPORT, todayISO, CURRENCY } from "./lib/theme.js";
+import { useExchangeRates } from "./lib/exchangeRates.js";
 import { TabButton } from "./components/ui.jsx";
 import Login from "./components/Login.jsx";
 import Resumen from "./components/Resumen.jsx";
@@ -16,6 +17,12 @@ export default function App() {
   const [transactions, setTransactions] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState(null);
+  const [displayCurrency, setDisplayCurrency] = useState(() => localStorage.getItem("display-currency") || CURRENCY);
+  const { convert, loading: ratesLoading } = useExchangeRates();
+
+  useEffect(() => {
+    localStorage.setItem("display-currency", displayCurrency);
+  }, [displayCurrency]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -166,11 +173,29 @@ export default function App() {
         {loadingData ? (
           <p style={{ color: C.inkSoft, fontSize: 13 }}>Abriendo el libro…</p>
         ) : view === "resumen" ? (
-          <Resumen transactions={transactions} accounts={accounts} month={month} setMonth={setMonth} />
+          <Resumen
+            transactions={transactions}
+            accounts={accounts}
+            month={month}
+            setMonth={setMonth}
+            displayCurrency={displayCurrency}
+            setDisplayCurrency={setDisplayCurrency}
+            convert={convert}
+            ratesLoading={ratesLoading}
+          />
         ) : view === "diario" ? (
           <Diario transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} month={month} setMonth={setMonth} />
         ) : (
-          <Cuentas accounts={accounts} addAccount={addAccount} updateAccount={updateAccount} deleteAccount={deleteAccount} />
+          <Cuentas
+            accounts={accounts}
+            addAccount={addAccount}
+            updateAccount={updateAccount}
+            deleteAccount={deleteAccount}
+            displayCurrency={displayCurrency}
+            setDisplayCurrency={setDisplayCurrency}
+            convert={convert}
+            ratesLoading={ratesLoading}
+          />
         )}
       </main>
     </div>
