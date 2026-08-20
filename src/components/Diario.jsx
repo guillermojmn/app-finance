@@ -15,20 +15,19 @@ import {
 import { Eyebrow, TextField, SelectField, IconBtn } from "./ui.jsx";
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
+const OTHER = "__other__";
 
 export default function Diario({ transactions, addTransaction, updateTransaction, deleteTransaction, month, setMonth }) {
-  const [form, setForm] = useState({ date: todayISO(), description: "", category: "", type: "variable", amount: "", currency: "CHF" });
+  const [form, setForm] = useState({ date: todayISO(), description: "", category: "", customCategory: "", type: "variable", amount: "", currency: "CHF" });
   const [showAll, setShowAll] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [editValues, setEditValues] = useState({ category: "", amount: "", currency: "CHF" });
+  const [editValues, setEditValues] = useState({ category: "", customCategory: "", amount: "", currency: "CHF" });
 
   const rows = useMemo(() => {
     const filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
     return [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1));
   }, [transactions, month, showAll]);
-
-  const suggestions = form.type === "fixed" ? FIXED_SUGGESTIONS : form.type === "variable" ? VARIABLE_SUGGESTIONS : INCOME_SUGGESTIONS;
 
   const categoryOptionsByType = useMemo(() => {
     const sets = { income: new Set(INCOME_SUGGESTIONS), fixed: new Set(FIXED_SUGGESTIONS), variable: new Set(VARIABLE_SUGGESTIONS) };
@@ -45,27 +44,38 @@ export default function Diario({ transactions, addTransaction, updateTransaction
   async function submit(e) {
     e.preventDefault();
     if (!form.description.trim() || !form.amount) return;
+    const resolvedCategory =
+      form.category === OTHER
+        ? form.customCategory.trim() || null
+        : form.category || (form.type === "income" ? "Ingreso" : "Otros");
     setSaving(true);
     await addTransaction({
       date: form.date,
       description: form.description.trim(),
-      category: form.category.trim() || (form.type === "income" ? "Ingreso" : "Otros"),
+      category: resolvedCategory,
       type: form.type,
       amount: Number(form.amount),
       currency: form.currency,
     });
     setSaving(false);
-    setForm({ date: form.date, description: "", category: "", type: form.type, amount: "", currency: form.currency });
+    setForm({ date: form.date, description: "", category: "", customCategory: "", type: form.type, amount: "", currency: form.currency });
   }
 
   function startEdit(t) {
     setEditing(t.id);
-    setEditValues({ category: t.category || "", amount: String(t.amount), currency: t.currency || "CHF" });
+    const known = categoryOptionsByType[t.type]?.includes(t.category);
+    setEditValues({
+      category: t.category ? (known ? t.category : OTHER) : "",
+      customCategory: t.category && !known ? t.category : "",
+      amount: String(t.amount),
+      currency: t.currency || "CHF",
+    });
   }
 
   async function saveEdit(id) {
+    const resolvedCategory = editValues.category === OTHER ? editValues.customCategory.trim() || null : editValues.category || null;
     await updateTransaction(id, {
-      category: editValues.category.trim() || null,
+      category: resolvedCategory,
       amount: Number(editValues.amount) || 0,
       currency: editValues.currency,
     });
@@ -129,28 +139,32 @@ export default function Diario({ transactions, addTransaction, updateTransaction
         <SelectField
           label="Tipo"
           value={form.type}
-          onChange={(e) => setForm({ ...form, type: e.target.value, category: "" })}
+          onChange={(e) => setForm({ ...form, type: e.target.value, category: "", customCategory: "" })}
           options={[
             { value: "income", label: "Ingreso" },
             { value: "fixed", label: "Gasto fijo" },
             { value: "variable", label: "Gasto variable" },
           ]}
         />
-        <div style={{ position: "relative" }}>
+        <SelectField
+          label="Categoría"
+          value={form.category}
+          onChange={(e) => setForm({ ...form, category: e.target.value })}
+          options={[
+            { value: "", label: "Sin categoría" },
+            ...categoryOptionsByType[form.type].map((c) => ({ value: c, label: c })),
+            { value: OTHER, label: "Otro…" },
+          ]}
+        />
+        {form.category === OTHER && (
           <TextField
-            label="Categoría"
+            label="Nueva categoría"
             type="text"
-            list="cat-suggestions"
-            placeholder="opcional"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            placeholder="p. ej. Regalos"
+            value={form.customCategory}
+            onChange={(e) => setForm({ ...form, customCategory: e.target.value })}
           />
-          <datalist id="cat-suggestions">
-            {suggestions.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
-        </div>
+        )}
         <TextField
           label="Importe"
           type="number"
@@ -264,8 +278,18 @@ export default function Diario({ transactions, addTransaction, updateTransaction
                     options={[
                       { value: "", label: "Sin categoría" },
                       ...categoryOptionsByType[t.type].map((c) => ({ value: c, label: c })),
+                      { value: OTHER, label: "Otro…" },
                     ]}
                   />
+                  {editValues.category === OTHER && (
+                    <TextField
+                      label="Nueva categoría"
+                      type="text"
+                      placeholder="p. ej. Regalos"
+                      value={editValues.customCategory}
+                      onChange={(e) => setEditValues({ ...editValues, customCategory: e.target.value })}
+                    />
+                  )}
                   <TextField
                     label="Importe"
                     type="number"
