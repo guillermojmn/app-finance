@@ -1,12 +1,16 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2 } from "lucide-react";
-import { C, fmt, todayISO, monthOf, FIXED_SUGGESTIONS, VARIABLE_SUGGESTIONS, TYPE_LABEL, TYPE_COLOR } from "../lib/theme.js";
+import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { C, fmt, todayISO, monthOf, CURRENCIES, FIXED_SUGGESTIONS, VARIABLE_SUGGESTIONS, TYPE_LABEL, TYPE_COLOR } from "../lib/theme.js";
 import { Eyebrow, TextField, SelectField, IconBtn } from "./ui.jsx";
 
-export default function Diario({ transactions, addTransaction, deleteTransaction, month, setMonth }) {
-  const [form, setForm] = useState({ date: todayISO(), description: "", category: "", type: "variable", amount: "" });
+const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
+
+export default function Diario({ transactions, addTransaction, updateTransaction, deleteTransaction, month, setMonth }) {
+  const [form, setForm] = useState({ date: todayISO(), description: "", category: "", type: "variable", amount: "", currency: "CHF" });
   const [showAll, setShowAll] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(null);
+  const [editValues, setEditValues] = useState({ category: "", amount: "", currency: "CHF" });
 
   const rows = useMemo(() => {
     const filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
@@ -25,13 +29,28 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
       category: form.category.trim() || (form.type === "income" ? "Ingreso" : "Otros"),
       type: form.type,
       amount: Number(form.amount),
+      currency: form.currency,
     });
     setSaving(false);
-    setForm({ date: form.date, description: "", category: "", type: form.type, amount: "" });
+    setForm({ date: form.date, description: "", category: "", type: form.type, amount: "", currency: form.currency });
+  }
+
+  function startEdit(t) {
+    setEditing(t.id);
+    setEditValues({ category: t.category || "", amount: String(t.amount), currency: t.currency || "CHF" });
+  }
+
+  async function saveEdit(id) {
+    await updateTransaction(id, {
+      category: editValues.category.trim() || null,
+      amount: Number(editValues.amount) || 0,
+      currency: editValues.currency,
+    });
+    setEditing(null);
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
           <Eyebrow>Diario</Eyebrow>
@@ -39,7 +58,7 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
             Movimientos
           </h1>
         </div>
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <input
             type="month"
             value={month}
@@ -110,13 +129,19 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
           </datalist>
         </div>
         <TextField
-          label="Importe (CHF)"
+          label="Importe"
           type="number"
           step="0.01"
           min="0"
           placeholder="0.00"
           value={form.amount}
           onChange={(e) => setForm({ ...form, amount: e.target.value })}
+        />
+        <SelectField
+          label="Moneda"
+          value={form.currency}
+          onChange={(e) => setForm({ ...form, currency: e.target.value })}
+          options={CURRENCY_OPTIONS}
         />
         <button
           type="submit"
@@ -143,88 +168,114 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
         </button>
       </form>
 
-      <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, overflow: "hidden" }}>
-      <div style={{ overflowX: "auto" }}>
-      <div style={{ minWidth: 640 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "90px 1fr 130px 100px 110px 34px",
-            padding: "9px 16px",
-            borderBottom: `1px solid ${C.ruleStrong}`,
-            fontFamily: "'IBM Plex Sans', sans-serif",
-            fontSize: 10.5,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: C.inkSoft,
-            fontWeight: 600,
-          }}
-        >
-          <div>Fecha</div>
-          <div>Descripción</div>
-          <div>Categoría</div>
-          <div>Tipo</div>
-          <div style={{ textAlign: "right" }}>Importe</div>
-          <div />
-        </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {rows.length === 0 ? (
-          <p style={{ padding: 20, fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: C.inkSoft }}>
+          <p
+            style={{
+              background: C.card,
+              border: `1px solid ${C.rule}`,
+              borderRadius: 4,
+              padding: 20,
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 13,
+              color: C.inkSoft,
+            }}
+          >
             Nada apuntado todavía. Añade el primer movimiento arriba.
           </p>
         ) : (
-          rows.map((t, i) => (
+          rows.map((t) => (
             <div
               key={t.id}
               style={{
-                display: "grid",
-                gridTemplateColumns: "90px 1fr 130px 100px 110px 34px",
-                padding: "10px 16px",
-                borderBottom: i === rows.length - 1 ? "none" : `1px solid ${C.rule}`,
-                alignItems: "center",
+                background: C.card,
+                border: `1px solid ${C.rule}`,
+                borderRadius: 4,
+                padding: "12px 14px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
                 fontFamily: "'IBM Plex Sans', sans-serif",
-                fontSize: 12.5,
-                color: C.ink,
               }}
             >
-              <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: C.inkSoft }}>{t.date}</div>
-              <div>{t.description}</div>
-              <div style={{ color: C.inkSoft }}>{t.category}</div>
-              <div>
-                <span
-                  style={{
-                    fontSize: 10.5,
-                    fontWeight: 600,
-                    color: TYPE_COLOR[t.type],
-                    border: `1px solid ${TYPE_COLOR[t.type]}55`,
-                    borderRadius: 20,
-                    padding: "2px 8px",
-                  }}
-                >
-                  {TYPE_LABEL[t.type]}
-                </span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: C.inkSoft }}>{t.date}</span>
+                  <span
+                    style={{
+                      fontSize: 10.5,
+                      fontWeight: 600,
+                      color: TYPE_COLOR[t.type],
+                      border: `1px solid ${TYPE_COLOR[t.type]}55`,
+                      borderRadius: 20,
+                      padding: "2px 8px",
+                    }}
+                  >
+                    {TYPE_LABEL[t.type]}
+                  </span>
+                </div>
+                {editing !== t.id && (
+                  <div
+                    style={{
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      fontVariantNumeric: "tabular-nums",
+                      color: t.type === "income" ? C.income : C.expense,
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}
+                  >
+                    {t.type === "income" ? "+" : "−"}
+                    {fmt(t.amount)} {t.currency || "CHF"}
+                  </div>
+                )}
               </div>
-              <div
-                style={{
-                  textAlign: "right",
-                  fontFamily: "'IBM Plex Mono', monospace",
-                  fontVariantNumeric: "tabular-nums",
-                  color: t.type === "income" ? C.income : C.expense,
-                  fontWeight: 600,
-                }}
-              >
-                {t.type === "income" ? "+" : "−"}
-                {fmt(t.amount)}
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <IconBtn danger title="Eliminar" onClick={() => deleteTransaction(t.id)}>
-                  <Trash2 size={13} />
-                </IconBtn>
-              </div>
+
+              <div style={{ fontSize: 12.5, color: C.ink }}>{t.description}</div>
+
+              {editing === t.id ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "end", marginTop: 4 }}>
+                  <TextField
+                    label="Categoría"
+                    type="text"
+                    value={editValues.category}
+                    onChange={(e) => setEditValues({ ...editValues, category: e.target.value })}
+                  />
+                  <TextField
+                    label="Importe"
+                    type="number"
+                    step="0.01"
+                    value={editValues.amount}
+                    onChange={(e) => setEditValues({ ...editValues, amount: e.target.value })}
+                  />
+                  <SelectField
+                    label="Moneda"
+                    value={editValues.currency}
+                    onChange={(e) => setEditValues({ ...editValues, currency: e.target.value })}
+                    options={CURRENCY_OPTIONS}
+                  />
+                  <IconBtn title="Guardar" onClick={() => saveEdit(t.id)}>
+                    <Check size={13} />
+                  </IconBtn>
+                  <IconBtn title="Cancelar" onClick={() => setEditing(null)}>
+                    <X size={13} />
+                  </IconBtn>
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
+                  <span style={{ fontSize: 11.5, color: C.inkSoft }}>{t.category || "Sin categoría"}</span>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <IconBtn title="Editar" onClick={() => startEdit(t)}>
+                      <Pencil size={13} />
+                    </IconBtn>
+                    <IconBtn danger title="Eliminar" onClick={() => deleteTransaction(t.id)}>
+                      <Trash2 size={13} />
+                    </IconBtn>
+                  </div>
+                </div>
+              )}
             </div>
           ))
         )}
-      </div>
-      </div>
       </div>
     </div>
   );

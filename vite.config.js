@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon-192.png', 'icon-512.png'],
       manifest: {
-        name: 'Libro Mayor — Gestor de gastos',
-        short_name: 'Libro Mayor',
+        name: 'Cuentas — Gestor de gastos',
+        short_name: 'Cuentas',
         description: 'Gastos fijos y variables, ingresos, ahorro y cuentas bancarias personales',
         theme_color: '#202B22',
         background_color: '#EEF1EA',

@@ -23,8 +23,12 @@ create table if not exists transactions (
   category text,
   type text not null,
   amount numeric not null,
+  currency text not null default 'CHF',
   created_at timestamptz not null default now()
 );
+
+-- Si la tabla ya existía de antes (sin esta columna), esto la añade sin tocar tus datos.
+alter table transactions add column if not exists currency text not null default 'CHF';
 
 alter table accounts enable row level security;
 alter table transactions enable row level security;

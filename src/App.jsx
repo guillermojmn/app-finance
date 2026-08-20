@@ -60,6 +60,15 @@ export default function App() {
     setTransactions((prev) => [data, ...prev]);
   }
 
+  async function updateTransaction(id, patch) {
+    const { data, error: err } = await supabase.from("transactions").update(patch).eq("id", id).select().single();
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setTransactions((prev) => prev.map((t) => (t.id === id ? data : t)));
+  }
+
   async function deleteTransaction(id) {
     const { error: err } = await supabase.from("transactions").delete().eq("id", id);
     if (err) {
@@ -130,7 +139,7 @@ export default function App() {
         style={{ width: 200, flexShrink: 0, borderRight: `1px solid ${C.rule}`, paddingTop: 18, display: "flex", flexDirection: "column", gap: 2 }}
       >
         <div style={{ padding: "0 16px 16px" }}>
-          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 17, color: C.ink }}>Libro Mayor</div>
+          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 17, color: C.ink }}>Cuentas</div>
           <div style={{ fontSize: 10.5, color: C.inkSoft, marginTop: 2 }}>{session.user.email}</div>
         </div>
         <TabButton active={view === "resumen"} onClick={() => setView("resumen")} icon={LayoutDashboard} label="Resumen" hint="Cuenta de explotación" />
@@ -186,7 +195,14 @@ export default function App() {
             ratesLoading={ratesLoading}
           />
         ) : view === "diario" ? (
-          <Diario transactions={transactions} addTransaction={addTransaction} deleteTransaction={deleteTransaction} month={month} setMonth={setMonth} />
+          <Diario
+            transactions={transactions}
+            addTransaction={addTransaction}
+            updateTransaction={updateTransaction}
+            deleteTransaction={deleteTransaction}
+            month={month}
+            setMonth={setMonth}
+          />
         ) : (
           <Cuentas
             accounts={accounts}

@@ -51,7 +51,7 @@ export default function Login() {
           maxWidth: 360,
         }}
       >
-        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 22, color: C.ink }}>Libro Mayor</div>
+        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 22, color: C.ink }}>Cuentas</div>
         <div style={{ fontSize: 12.5, color: C.inkSoft, marginTop: 4, marginBottom: 22 }}>
           Tu cuenta personal de gastos, ingresos y ahorro.
         </div>
