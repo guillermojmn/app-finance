@@ -144,6 +144,8 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
       </form>
 
       <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, overflow: "hidden" }}>
+      <div style={{ overflowX: "auto" }}>
+      <div style={{ minWidth: 640 }}>
         <div
           style={{
             display: "grid",
@@ -221,6 +223,8 @@ export default function Diario({ transactions, addTransaction, deleteTransaction
             </div>
           ))
         )}
+      </div>
+      </div>
       </div>
     </div>
   );

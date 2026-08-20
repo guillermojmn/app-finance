@@ -112,14 +112,16 @@ export default function App() {
   if (!session) return <Login />;
 
   return (
-    <div style={{ minHeight: "100vh", background: C.paper, display: "flex", fontFamily: "'IBM Plex Sans', sans-serif" }}>
+    <div className="ledger-shell" style={{ minHeight: "100vh", background: C.paper, display: "flex", fontFamily: "'IBM Plex Sans', sans-serif" }}>
       <style>{`
         ${FONT_IMPORT}
         * { box-sizing: border-box; }
         html, body, #root { height: 100%; margin: 0; }
         input:focus, select:focus, button:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 1px; }
         @media (max-width: 720px) {
+          .ledger-shell { flex-direction: column !important; }
           .ledger-nav { flex-direction: row !important; width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.rule}; overflow-x: auto; }
+          .ledger-main { padding: 16px 14px 28px !important; }
         }
       `}</style>
 
@@ -154,7 +156,7 @@ export default function App() {
         </button>
       </nav>
 
-      <main style={{ flex: 1, padding: "26px 30px 40px", minWidth: 0 }}>
+      <main className="ledger-main" style={{ flex: 1, padding: "26px 30px 40px", minWidth: 0 }}>
         {error && (
           <div
             style={{
