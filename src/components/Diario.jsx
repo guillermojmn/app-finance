@@ -1,6 +1,17 @@
 import { useState, useMemo } from "react";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
-import { C, fmt, todayISO, monthOf, CURRENCIES, FIXED_SUGGESTIONS, VARIABLE_SUGGESTIONS, TYPE_LABEL, TYPE_COLOR } from "../lib/theme.js";
+import {
+  C,
+  fmt,
+  todayISO,
+  monthOf,
+  CURRENCIES,
+  FIXED_SUGGESTIONS,
+  VARIABLE_SUGGESTIONS,
+  INCOME_SUGGESTIONS,
+  TYPE_LABEL,
+  TYPE_COLOR,
+} from "../lib/theme.js";
 import { Eyebrow, TextField, SelectField, IconBtn } from "./ui.jsx";
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
@@ -17,7 +28,19 @@ export default function Diario({ transactions, addTransaction, updateTransaction
     return [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1));
   }, [transactions, month, showAll]);
 
-  const suggestions = form.type === "fixed" ? FIXED_SUGGESTIONS : form.type === "variable" ? VARIABLE_SUGGESTIONS : [];
+  const suggestions = form.type === "fixed" ? FIXED_SUGGESTIONS : form.type === "variable" ? VARIABLE_SUGGESTIONS : INCOME_SUGGESTIONS;
+
+  const categoryOptionsByType = useMemo(() => {
+    const sets = { income: new Set(INCOME_SUGGESTIONS), fixed: new Set(FIXED_SUGGESTIONS), variable: new Set(VARIABLE_SUGGESTIONS) };
+    transactions.forEach((t) => {
+      if (t.category && sets[t.type]) sets[t.type].add(t.category);
+    });
+    return {
+      income: [...sets.income].sort(),
+      fixed: [...sets.fixed].sort(),
+      variable: [...sets.variable].sort(),
+    };
+  }, [transactions]);
 
   async function submit(e) {
     e.preventDefault();
@@ -234,11 +257,14 @@ export default function Diario({ transactions, addTransaction, updateTransaction
 
               {editing === t.id ? (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "end", marginTop: 4 }}>
-                  <TextField
+                  <SelectField
                     label="Categoría"
-                    type="text"
                     value={editValues.category}
                     onChange={(e) => setEditValues({ ...editValues, category: e.target.value })}
+                    options={[
+                      { value: "", label: "Sin categoría" },
+                      ...categoryOptionsByType[t.type].map((c) => ({ value: c, label: c })),
+                    ]}
                   />
                   <TextField
                     label="Importe"

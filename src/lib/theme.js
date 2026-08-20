@@ -35,6 +35,7 @@ export function monthOf(dateStr) {
 
 export const FIXED_SUGGESTIONS = ["Alquiler", "Seguro", "Suscripciones", "Gimnasio", "Teléfono", "Internet"];
 export const VARIABLE_SUGGESTIONS = ["Comida", "Transporte", "Ocio", "Compras", "Salud", "Viajes"];
+export const INCOME_SUGGESTIONS = ["Salario", "Freelance", "Regalo", "Otros ingresos"];
 
 export const TYPE_LABEL = { income: "Ingreso", fixed: "Fijo", variable: "Variable" };
 export const TYPE_COLOR = { income: C.income, fixed: C.expense, variable: "#8A5A2A" };
