@@ -22,7 +22,7 @@ export default function Diario({ transactions, addTransaction, updateTransaction
   const [showAll, setShowAll] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [editValues, setEditValues] = useState({ category: "", customCategory: "", amount: "", currency: "CHF" });
+  const [editValues, setEditValues] = useState({ description: "", category: "", customCategory: "", amount: "", currency: "CHF" });
 
   const rows = useMemo(() => {
     const filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
@@ -65,6 +65,7 @@ export default function Diario({ transactions, addTransaction, updateTransaction
     setEditing(t.id);
     const known = categoryOptionsByType[t.type]?.includes(t.category);
     setEditValues({
+      description: t.description || "",
       category: t.category ? (known ? t.category : OTHER) : "",
       customCategory: t.category && !known ? t.category : "",
       amount: String(t.amount),
@@ -73,8 +74,10 @@ export default function Diario({ transactions, addTransaction, updateTransaction
   }
 
   async function saveEdit(id) {
+    if (!editValues.description.trim()) return;
     const resolvedCategory = editValues.category === OTHER ? editValues.customCategory.trim() || null : editValues.category || null;
     await updateTransaction(id, {
+      description: editValues.description.trim(),
       category: resolvedCategory,
       amount: Number(editValues.amount) || 0,
       currency: editValues.currency,
@@ -267,10 +270,16 @@ export default function Diario({ transactions, addTransaction, updateTransaction
                 )}
               </div>
 
-              <div style={{ fontSize: 12.5, color: C.ink }}>{t.description}</div>
+              {editing !== t.id && <div style={{ fontSize: 12.5, color: C.ink }}>{t.description}</div>}
 
               {editing === t.id ? (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "end", marginTop: 4 }}>
+                  <TextField
+                    label="Descripción"
+                    type="text"
+                    value={editValues.description}
+                    onChange={(e) => setEditValues({ ...editValues, description: e.target.value })}
+                  />
                   <SelectField
                     label="Categoría"
                     value={editValues.category}
