@@ -351,10 +351,10 @@ export default function Diario({ transactions, addTransaction, updateTransaction
                     options={CURRENCY_OPTIONS}
                   />
                   <IconBtn title="Guardar" onClick={() => saveEdit(t.id)}>
-                    <Check size={13} />
+                    <Check size={15} />
                   </IconBtn>
                   <IconBtn title="Cancelar" onClick={() => setEditing(null)}>
-                    <X size={13} />
+                    <X size={15} />
                   </IconBtn>
                 </div>
               ) : (
@@ -362,10 +362,10 @@ export default function Diario({ transactions, addTransaction, updateTransaction
                   <span style={{ fontSize: 11.5, color: C.inkSoft }}>{t.category || "Sin categoría"}</span>
                   <div style={{ display: "flex", gap: 6 }}>
                     <IconBtn title="Editar" onClick={() => startEdit(t)}>
-                      <Pencil size={13} />
+                      <Pencil size={15} />
                     </IconBtn>
                     <IconBtn danger title="Eliminar" onClick={() => deleteTransaction(t.id)}>
-                      <Trash2 size={13} />
+                      <Trash2 size={15} />
                     </IconBtn>
                   </div>
                 </div>

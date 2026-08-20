@@ -222,10 +222,10 @@ export default function Cuentas({
                         ))}
                       </select>
                       <IconBtn title="Guardar" onClick={() => saveEdit(a.id)}>
-                        <Check size={13} />
+                        <Check size={15} />
                       </IconBtn>
                       <IconBtn title="Cancelar" onClick={() => setEditing(null)}>
-                        <X size={13} />
+                        <X size={15} />
                       </IconBtn>
                     </>
                   ) : (
@@ -256,10 +256,10 @@ export default function Cuentas({
                           setEditCurrency(currency);
                         }}
                       >
-                        <Pencil size={13} />
+                        <Pencil size={15} />
                       </IconBtn>
                       <IconBtn danger title="Eliminar cuenta" onClick={() => deleteAccount(a.id)}>
-                        <Trash2 size={13} />
+                        <Trash2 size={15} />
                       </IconBtn>
                     </>
                   )}

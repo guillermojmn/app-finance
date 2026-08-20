@@ -121,14 +121,15 @@ export function IconBtn({ onClick, title, danger, children }) {
       onClick={onClick}
       title={title}
       style={{
-        border: `1px solid ${danger ? C.expense : C.rule}`,
-        background: "transparent",
-        color: danger ? C.expense : C.inkSoft,
-        borderRadius: 3,
-        padding: "5px 7px",
+        border: `1px solid ${danger ? C.expense : C.ruleStrong}`,
+        background: danger ? C.expenseSoft : C.paperDeep,
+        color: danger ? C.expense : C.ink,
+        borderRadius: 5,
+        padding: "8px 10px",
         cursor: "pointer",
         display: "inline-flex",
         alignItems: "center",
+        justifyContent: "center",
       }}
     >
       {children}

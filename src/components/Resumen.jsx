@@ -94,17 +94,19 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
             Aún no hay gastos variables este mes.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
             {byCategory.map(([cat, amt]) => (
-              <div key={cat} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div style={{ width: 110, fontSize: 12.5, fontFamily: "'IBM Plex Sans', sans-serif", color: C.ink, flexShrink: 0 }}>
-                  {cat}
+              <div key={cat} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                  <span style={{ fontSize: 12.5, fontFamily: "'IBM Plex Sans', sans-serif", color: C.ink, fontWeight: 600 }}>
+                    {cat}
+                  </span>
+                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontVariantNumeric: "tabular-nums", fontSize: 12.5, color: C.ink }}>
+                    {fmt(amt)} {displayCurrency}
+                  </span>
                 </div>
-                <div style={{ flex: 1, background: C.paperDeep, borderRadius: 2, height: 10, overflow: "hidden" }}>
-                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%" }} />
-                </div>
-                <div style={{ width: 100, textAlign: "right", fontFamily: "'IBM Plex Mono', monospace", fontSize: 12.5, color: C.ink }}>
-                  {fmt(amt)} {displayCurrency}
+                <div style={{ background: C.paperDeep, borderRadius: 3, height: 8, overflow: "hidden" }}>
+                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 3 }} />
                 </div>
               </div>
             ))}
