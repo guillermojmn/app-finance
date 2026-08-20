@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
 import { C, FONT_IMPORT } from "../lib/theme.js";
 
@@ -6,6 +7,7 @@ export default function Login() {
   const [mode, setMode] = useState("signin"); // signin | signup
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | loading | error
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -103,21 +105,43 @@ export default function Login() {
           </label>
           <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 600 }}>Contraseña</span>
-            <input
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                fontSize: 13.5,
-                padding: "9px 10px",
-                borderRadius: 3,
-                border: `1px solid ${C.rule}`,
-                outline: "none",
-              }}
-            />
+            <div style={{ position: "relative", display: "flex" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                style={{
+                  width: "100%",
+                  fontSize: 13.5,
+                  padding: "9px 34px 9px 10px",
+                  borderRadius: 3,
+                  border: `1px solid ${C.rule}`,
+                  outline: "none",
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                style={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "transparent",
+                  border: "none",
+                  padding: 4,
+                  cursor: "pointer",
+                  color: C.inkSoft,
+                  display: "flex",
+                }}
+              >
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+              </button>
+            </div>
           </label>
           <button
             type="submit"
