@@ -28,7 +28,7 @@ export function useExchangeRates() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("https://api.frankfurter.app/latest?from=CHF&to=EUR,USD");
+        const res = await fetch("https://api.frankfurter.dev/v1/latest?from=CHF&to=EUR,USD");
         const data = await res.json();
         const fresh = { CHF: 1, EUR: data.rates.EUR, USD: data.rates.USD };
         if (!cancelled) {
