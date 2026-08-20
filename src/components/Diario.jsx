@@ -20,14 +20,16 @@ const OTHER = "__other__";
 export default function Diario({ transactions, addTransaction, updateTransaction, deleteTransaction, month, setMonth }) {
   const [form, setForm] = useState({ date: todayISO(), description: "", category: "", customCategory: "", type: "variable", amount: "", currency: "CHF" });
   const [showAll, setShowAll] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("all");
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [editValues, setEditValues] = useState({ description: "", category: "", customCategory: "", amount: "", currency: "CHF" });
+  const [editValues, setEditValues] = useState({ date: "", description: "", category: "", customCategory: "", amount: "", currency: "CHF" });
 
   const rows = useMemo(() => {
-    const filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
+    let filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
+    if (typeFilter !== "all") filtered = filtered.filter((t) => t.type === typeFilter);
     return [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1));
-  }, [transactions, month, showAll]);
+  }, [transactions, month, showAll, typeFilter]);
 
   const categoryOptionsByType = useMemo(() => {
     const sets = { income: new Set(INCOME_SUGGESTIONS), fixed: new Set(FIXED_SUGGESTIONS), variable: new Set(VARIABLE_SUGGESTIONS) };
@@ -65,6 +67,7 @@ export default function Diario({ transactions, addTransaction, updateTransaction
     setEditing(t.id);
     const known = categoryOptionsByType[t.type]?.includes(t.category);
     setEditValues({
+      date: t.date,
       description: t.description || "",
       category: t.category ? (known ? t.category : OTHER) : "",
       customCategory: t.category && !known ? t.category : "",
@@ -77,6 +80,7 @@ export default function Diario({ transactions, addTransaction, updateTransaction
     if (!editValues.description.trim()) return;
     const resolvedCategory = editValues.category === OTHER ? editValues.customCategory.trim() || null : editValues.category || null;
     await updateTransaction(id, {
+      date: editValues.date,
       description: editValues.description.trim(),
       category: resolvedCategory,
       amount: Number(editValues.amount) || 0,
@@ -116,6 +120,34 @@ export default function Diario({ transactions, addTransaction, updateTransaction
             Ver todo el historial
           </label>
         </div>
+      </div>
+
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {[
+          { value: "all", label: "Todos" },
+          { value: "income", label: "Ingresos" },
+          { value: "fixed", label: "Gastos fijos" },
+          { value: "variable", label: "Gastos variables" },
+        ].map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setTypeFilter(f.value)}
+            style={{
+              fontFamily: "'IBM Plex Sans', sans-serif",
+              fontSize: 12,
+              fontWeight: 600,
+              padding: "6px 12px",
+              borderRadius: 20,
+              border: `1px solid ${typeFilter === f.value ? C.ink : C.rule}`,
+              background: typeFilter === f.value ? C.ink : C.card,
+              color: typeFilter === f.value ? C.paper : C.inkSoft,
+              cursor: "pointer",
+            }}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       <form
@@ -274,6 +306,12 @@ export default function Diario({ transactions, addTransaction, updateTransaction
 
               {editing === t.id ? (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "end", marginTop: 4 }}>
+                  <TextField
+                    label="Fecha"
+                    type="date"
+                    value={editValues.date}
+                    onChange={(e) => setEditValues({ ...editValues, date: e.target.value })}
+                  />
                   <TextField
                     label="Descripción"
                     type="text"

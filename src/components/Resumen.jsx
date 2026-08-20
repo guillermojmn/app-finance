@@ -10,7 +10,8 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
   const income = monthTx.filter((t) => t.type === "income").reduce((s, t) => s + inDisplay(t), 0);
   const fixed = monthTx.filter((t) => t.type === "fixed").reduce((s, t) => s + inDisplay(t), 0);
   const variable = monthTx.filter((t) => t.type === "variable").reduce((s, t) => s + inDisplay(t), 0);
-  const balance = income - fixed - variable;
+  const totalExpenses = fixed + variable;
+  const balance = income - totalExpenses;
   const patrimonio = accounts.reduce((s, a) => s + convert(a.balance, a.currency || "CHF", displayCurrency), 0);
 
   const byCategory = useMemo(() => {
@@ -80,6 +81,7 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
         <Stamp label="Ingresos" value={income} tone="income" currency={displayCurrency} />
         <Stamp label="Gastos fijos" value={fixed} tone="expense" currency={displayCurrency} />
         <Stamp label="Gastos variables" value={variable} tone="expense" currency={displayCurrency} />
+        <Stamp label="Gastos totales (fijos + variables)" value={totalExpenses} tone="expense" currency={displayCurrency} />
         <Stamp label="Balance del mes" value={balance} tone={balance >= 0 ? "income" : "expense"} big currency={displayCurrency} />
       </div>
 

@@ -26,6 +26,7 @@ export default function Cuentas({
   const total = accounts.reduce((s, a) => s + inDisplay(a), 0);
   const corriente = accounts.filter((a) => a.type === "corriente").reduce((s, a) => s + inDisplay(a), 0);
   const ahorro = accounts.filter((a) => a.type === "ahorro").reduce((s, a) => s + inDisplay(a), 0);
+  const conjunta = accounts.filter((a) => a.type === "conjunta").reduce((s, a) => s + inDisplay(a), 0);
 
   async function submit(e) {
     e.preventDefault();
@@ -83,6 +84,7 @@ export default function Cuentas({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
         <Stamp label="Cuentas corrientes" value={corriente} tone="ink" currency={displayCurrency} />
         <Stamp label="Cuentas de ahorro" value={ahorro} tone="gold" currency={displayCurrency} />
+        <Stamp label="Cuenta conjunta" value={conjunta} tone="ink" currency={displayCurrency} />
         <Stamp label="Patrimonio total" value={total} tone="income" big currency={displayCurrency} />
       </div>
 
@@ -113,6 +115,7 @@ export default function Cuentas({
           options={[
             { value: "corriente", label: "Corriente" },
             { value: "ahorro", label: "Ahorro" },
+            { value: "conjunta", label: "Conjunta" },
           ]}
         />
         <TextField
