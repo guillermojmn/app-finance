@@ -17,7 +17,18 @@ import { Eyebrow, TextField, SelectField, IconBtn } from "./ui.jsx";
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
 const OTHER = "__other__";
 
-export default function Diario({ transactions, addTransaction, updateTransaction, deleteTransaction, month, setMonth }) {
+export default function Diario({
+  transactions,
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
+  month,
+  setMonth,
+  displayCurrency,
+  setDisplayCurrency,
+  convert,
+  ratesLoading,
+}) {
   const [form, setForm] = useState({ date: todayISO(), description: "", category: "", customCategory: "", type: "variable", amount: "", currency: "CHF" });
   const [showAll, setShowAll] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
@@ -118,6 +129,29 @@ export default function Diario({ transactions, addTransaction, updateTransaction
           <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontFamily: "'IBM Plex Sans', sans-serif", color: C.inkSoft }}>
             <input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} />
             Ver todo el historial
+          </label>
+          <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11.5, color: C.inkSoft, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+            Convertir a
+            <select
+              value={displayCurrency}
+              onChange={(e) => setDisplayCurrency(e.target.value)}
+              style={{
+                fontFamily: "'IBM Plex Mono', monospace",
+                fontSize: 13,
+                padding: "6px 8px",
+                borderRadius: 3,
+                border: `1px solid ${C.rule}`,
+                background: C.card,
+                color: C.ink,
+              }}
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            {ratesLoading && <span style={{ fontSize: 10.5 }}>actualizando tipos…</span>}
           </label>
         </div>
       </div>
@@ -287,17 +321,24 @@ export default function Diario({ transactions, addTransaction, updateTransaction
                   </span>
                 </div>
                 {editing !== t.id && (
-                  <div
-                    style={{
-                      fontFamily: "'IBM Plex Mono', monospace",
-                      fontVariantNumeric: "tabular-nums",
-                      color: t.type === "income" ? C.income : C.expense,
-                      fontWeight: 600,
-                      fontSize: 14,
-                    }}
-                  >
-                    {t.type === "income" ? "+" : "−"}
-                    {fmt(t.amount)} {t.currency || "CHF"}
+                  <div style={{ textAlign: "right" }}>
+                    <div
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontVariantNumeric: "tabular-nums",
+                        color: t.type === "income" ? C.income : C.expense,
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      {t.type === "income" ? "+" : "−"}
+                      {fmt(t.amount)} {t.currency || "CHF"}
+                    </div>
+                    {(t.currency || "CHF") !== displayCurrency && (
+                      <div style={{ fontSize: 10.5, color: C.inkSoft, fontFamily: "'IBM Plex Mono', monospace" }}>
+                        ≈ {fmt(convert(t.amount, t.currency || "CHF", displayCurrency))} {displayCurrency}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

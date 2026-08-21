@@ -127,10 +127,12 @@ export default function App() {
         * { box-sizing: border-box; }
         html, body, #root { height: 100%; margin: 0; }
         input:focus, select:focus, button:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 1px; }
+        .ledger-mobile-topbar, .ledger-mobile-bottomnav { display: none; }
         @media (max-width: 720px) {
-          .ledger-shell { flex-direction: column !important; }
-          .ledger-nav { flex-direction: row !important; width: 100% !important; border-right: none !important; border-bottom: 1px solid ${C.rule}; overflow-x: auto; }
-          .ledger-main { padding: 16px 14px 28px !important; }
+          .ledger-nav { display: none !important; }
+          .ledger-mobile-topbar { display: flex !important; }
+          .ledger-mobile-bottomnav { display: flex !important; }
+          .ledger-main { padding: 16px 14px calc(84px + env(safe-area-inset-bottom)) !important; }
         }
       `}</style>
 
@@ -165,7 +167,40 @@ export default function App() {
         </button>
       </nav>
 
-      <main className="ledger-main" style={{ flex: 1, padding: "26px 30px 40px", minWidth: 0 }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <div
+          className="ledger-mobile-topbar"
+          style={{
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "12px 16px",
+            paddingTop: "calc(12px + env(safe-area-inset-top))",
+            borderBottom: `1px solid ${C.rule}`,
+            background: C.card,
+          }}
+        >
+          <div>
+            <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 16, color: C.ink }}>Cuentas</div>
+            <div style={{ fontSize: 10, color: C.inkSoft, marginTop: 1 }}>{session.user.email}</div>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            title="Cerrar sesión"
+            style={{
+              border: `1px solid ${C.rule}`,
+              background: C.paperDeep,
+              color: C.inkSoft,
+              borderRadius: 5,
+              padding: 9,
+              cursor: "pointer",
+              display: "inline-flex",
+            }}
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+
+        <main className="ledger-main" style={{ flex: 1, padding: "26px 30px 40px", minWidth: 0 }}>
         {error && (
           <div
             style={{
@@ -202,6 +237,10 @@ export default function App() {
             deleteTransaction={deleteTransaction}
             month={month}
             setMonth={setMonth}
+            displayCurrency={displayCurrency}
+            setDisplayCurrency={setDisplayCurrency}
+            convert={convert}
+            ratesLoading={ratesLoading}
           />
         ) : (
           <Cuentas
@@ -215,7 +254,48 @@ export default function App() {
             ratesLoading={ratesLoading}
           />
         )}
-      </main>
+        </main>
+
+        <nav
+          className="ledger-mobile-bottomnav"
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderTop: `1px solid ${C.rule}`,
+            background: C.card,
+            paddingBottom: "env(safe-area-inset-bottom)",
+            zIndex: 10,
+          }}
+        >
+          {[
+            { key: "resumen", icon: LayoutDashboard, label: "Resumen" },
+            { key: "diario", icon: BookText, label: "Diario" },
+            { key: "cuentas", icon: Landmark, label: "Cuentas" },
+          ].map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => setView(key)}
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 3,
+                padding: "10px 4px 8px",
+                border: "none",
+                background: "transparent",
+                cursor: "pointer",
+                fontFamily: "'IBM Plex Sans', sans-serif",
+              }}
+            >
+              <Icon size={20} color={view === key ? C.gold : C.inkSoft} />
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: view === key ? C.ink : C.inkSoft }}>{label}</span>
+            </button>
+          ))}
+        </nav>
+      </div>
     </div>
   );
 }
