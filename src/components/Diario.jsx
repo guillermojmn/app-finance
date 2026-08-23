@@ -19,6 +19,7 @@ const OTHER = "__other__";
 
 export default function Diario({
   transactions,
+  accounts,
   addTransaction,
   updateTransaction,
   deleteTransaction,
@@ -29,12 +30,35 @@ export default function Diario({
   convert,
   ratesLoading,
 }) {
-  const [form, setForm] = useState({ date: todayISO(), description: "", category: "", customCategory: "", type: "variable", amount: "", currency: "CHF" });
+  const [form, setForm] = useState({
+    date: todayISO(),
+    description: "",
+    category: "",
+    customCategory: "",
+    type: "variable",
+    amount: "",
+    currency: "CHF",
+    accountId: "",
+  });
   const [showAll, setShowAll] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [editValues, setEditValues] = useState({ date: "", description: "", category: "", customCategory: "", amount: "", currency: "CHF" });
+  const [editValues, setEditValues] = useState({
+    date: "",
+    description: "",
+    category: "",
+    customCategory: "",
+    amount: "",
+    currency: "CHF",
+    accountId: "",
+  });
+
+  const accountOptions = [
+    { value: "", label: accounts.length ? "Selecciona una cuenta" : "Añade una cuenta primero" },
+    ...accounts.map((a) => ({ value: a.id, label: `${a.name} (${a.currency || "CHF"})` })),
+  ];
+  const accountName = (id) => accounts.find((a) => a.id === id)?.name;
 
   const rows = useMemo(() => {
     let filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
@@ -56,7 +80,7 @@ export default function Diario({
 
   async function submit(e) {
     e.preventDefault();
-    if (!form.description.trim() || !form.amount) return;
+    if (!form.description.trim() || !form.amount || !form.accountId) return;
     const resolvedCategory =
       form.category === OTHER
         ? form.customCategory.trim() || null
@@ -69,9 +93,19 @@ export default function Diario({
       type: form.type,
       amount: Number(form.amount),
       currency: form.currency,
+      account_id: form.accountId,
     });
     setSaving(false);
-    setForm({ date: form.date, description: "", category: "", customCategory: "", type: form.type, amount: "", currency: form.currency });
+    setForm({
+      date: form.date,
+      description: "",
+      category: "",
+      customCategory: "",
+      type: form.type,
+      amount: "",
+      currency: form.currency,
+      accountId: form.accountId,
+    });
   }
 
   function startEdit(t) {
@@ -84,6 +118,7 @@ export default function Diario({
       customCategory: t.category && !known ? t.category : "",
       amount: String(t.amount),
       currency: t.currency || "CHF",
+      accountId: t.account_id || "",
     });
   }
 
@@ -96,6 +131,7 @@ export default function Diario({
       category: resolvedCategory,
       amount: Number(editValues.amount) || 0,
       currency: editValues.currency,
+      account_id: editValues.accountId || null,
     });
     setEditing(null);
   }
@@ -184,6 +220,22 @@ export default function Diario({
         ))}
       </div>
 
+      {accounts.length === 0 && (
+        <p
+          style={{
+            background: C.expenseSoft,
+            border: `1px solid ${C.expense}`,
+            borderRadius: 4,
+            padding: "10px 14px",
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 12.5,
+            color: C.expense,
+          }}
+        >
+          Necesitas al menos una cuenta antes de apuntar movimientos — créala en la pestaña Cuentas.
+        </p>
+      )}
+
       <form
         onSubmit={submit}
         style={{
@@ -198,6 +250,12 @@ export default function Diario({
         }}
       >
         <TextField label="Fecha" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} />
+        <SelectField
+          label="Cuenta"
+          value={form.accountId}
+          onChange={(e) => setForm({ ...form, accountId: e.target.value })}
+          options={accountOptions}
+        />
         <TextField
           label="Descripción"
           type="text"
@@ -251,7 +309,7 @@ export default function Diario({
         />
         <button
           type="submit"
-          disabled={saving}
+          disabled={saving || !form.accountId}
           style={{
             display: "flex",
             alignItems: "center",
@@ -267,7 +325,7 @@ export default function Diario({
             fontSize: 13,
             cursor: "pointer",
             height: 37,
-            opacity: saving ? 0.6 : 1,
+            opacity: saving || !form.accountId ? 0.6 : 1,
           }}
         >
           <Plus size={15} /> Apuntar
@@ -391,6 +449,12 @@ export default function Diario({
                     onChange={(e) => setEditValues({ ...editValues, currency: e.target.value })}
                     options={CURRENCY_OPTIONS}
                   />
+                  <SelectField
+                    label="Cuenta"
+                    value={editValues.accountId}
+                    onChange={(e) => setEditValues({ ...editValues, accountId: e.target.value })}
+                    options={accountOptions}
+                  />
                   <IconBtn title="Guardar" onClick={() => saveEdit(t.id)}>
                     <Check size={15} />
                   </IconBtn>
@@ -400,7 +464,10 @@ export default function Diario({
                 </div>
               ) : (
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
-                  <span style={{ fontSize: 11.5, color: C.inkSoft }}>{t.category || "Sin categoría"}</span>
+                  <span style={{ fontSize: 11.5, color: C.inkSoft }}>
+                    {t.category || "Sin categoría"}
+                    {accountName(t.account_id) && ` · ${accountName(t.account_id)}`}
+                  </span>
                   <div style={{ display: "flex", gap: 6 }}>
                     <IconBtn title="Editar" onClick={() => startEdit(t)}>
                       <Pencil size={15} />

@@ -24,11 +24,13 @@ create table if not exists transactions (
   type text not null,
   amount numeric not null,
   currency text not null default 'CHF',
+  account_id uuid references accounts(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
--- Si la tabla ya existía de antes (sin esta columna), esto la añade sin tocar tus datos.
+-- Si la tabla ya existía de antes (sin estas columnas), esto las añade sin tocar tus datos.
 alter table transactions add column if not exists currency text not null default 'CHF';
+alter table transactions add column if not exists account_id uuid references accounts(id) on delete set null;
 
 alter table accounts enable row level security;
 alter table transactions enable row level security;

@@ -47,6 +47,21 @@ export default function App() {
     if (session?.user?.id) loadData(session.user.id);
   }, [session, loadData]);
 
+  // Positivo = ingreso a la cuenta, negativo = gasto de la cuenta.
+  function txEffect(tx, accountCurrency) {
+    const sign = tx.type === "income" ? 1 : -1;
+    return convert(tx.amount, tx.currency || "CHF", accountCurrency || "CHF") * sign;
+  }
+
+  async function applyBalanceAdjustments(adjustments) {
+    for (const [accountId, delta] of Object.entries(adjustments)) {
+      if (!delta) continue;
+      const account = accounts.find((a) => a.id === accountId);
+      if (!account) continue;
+      await updateAccount(accountId, { balance: Number(account.balance) + delta });
+    }
+  }
+
   async function addTransaction(tx) {
     const { data, error: err } = await supabase
       .from("transactions")
@@ -58,24 +73,45 @@ export default function App() {
       return;
     }
     setTransactions((prev) => [data, ...prev]);
+    if (data.account_id) {
+      const account = accounts.find((a) => a.id === data.account_id);
+      if (account) await applyBalanceAdjustments({ [data.account_id]: txEffect(data, account.currency) });
+    }
   }
 
   async function updateTransaction(id, patch) {
+    const old = transactions.find((t) => t.id === id);
     const { data, error: err } = await supabase.from("transactions").update(patch).eq("id", id).select().single();
     if (err) {
       setError(err.message);
       return;
     }
     setTransactions((prev) => prev.map((t) => (t.id === id ? data : t)));
+
+    const adjustments = {};
+    if (old?.account_id) {
+      const account = accounts.find((a) => a.id === old.account_id);
+      if (account) adjustments[old.account_id] = (adjustments[old.account_id] || 0) - txEffect(old, account.currency);
+    }
+    if (data.account_id) {
+      const account = accounts.find((a) => a.id === data.account_id);
+      if (account) adjustments[data.account_id] = (adjustments[data.account_id] || 0) + txEffect(data, account.currency);
+    }
+    await applyBalanceAdjustments(adjustments);
   }
 
   async function deleteTransaction(id) {
+    const old = transactions.find((t) => t.id === id);
     const { error: err } = await supabase.from("transactions").delete().eq("id", id);
     if (err) {
       setError(err.message);
       return;
     }
     setTransactions((prev) => prev.filter((t) => t.id !== id));
+    if (old?.account_id) {
+      const account = accounts.find((a) => a.id === old.account_id);
+      if (account) await applyBalanceAdjustments({ [old.account_id]: -txEffect(old, account.currency) });
+    }
   }
 
   async function addAccount(acc) {
@@ -232,6 +268,7 @@ export default function App() {
         ) : view === "diario" ? (
           <Diario
             transactions={transactions}
+            accounts={accounts}
             addTransaction={addTransaction}
             updateTransaction={updateTransaction}
             deleteTransaction={deleteTransaction}
