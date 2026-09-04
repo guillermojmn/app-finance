@@ -55,7 +55,7 @@ export default function Diario({
   });
 
   const accountOptions = [
-    { value: "", label: accounts.length ? "Selecciona una cuenta" : "Añade una cuenta primero" },
+    { value: "", label: "Sin cuenta asignada" },
     ...accounts.map((a) => ({ value: a.id, label: `${a.name} (${a.currency || "CHF"})` })),
   ];
   const accountName = (id) => accounts.find((a) => a.id === id)?.name;
@@ -80,22 +80,23 @@ export default function Diario({
 
   async function submit(e) {
     e.preventDefault();
-    if (!form.description.trim() || !form.amount || !form.accountId) return;
+    if (!form.description.trim() || !form.amount) return;
     const resolvedCategory =
       form.category === OTHER
         ? form.customCategory.trim() || null
         : form.category || (form.type === "income" ? "Ingreso" : "Otros");
     setSaving(true);
-    await addTransaction({
+    const ok = await addTransaction({
       date: form.date,
       description: form.description.trim(),
       category: resolvedCategory,
       type: form.type,
       amount: Number(form.amount),
       currency: form.currency,
-      account_id: form.accountId,
+      account_id: form.accountId || null,
     });
     setSaving(false);
+    if (!ok) return; // el error ya se muestra arriba; no borramos lo que escribió
     setForm({
       date: form.date,
       description: "",
@@ -223,16 +224,16 @@ export default function Diario({
       {accounts.length === 0 && (
         <p
           style={{
-            background: C.expenseSoft,
-            border: `1px solid ${C.expense}`,
+            background: C.paperDeep,
+            border: `1px solid ${C.rule}`,
             borderRadius: 4,
             padding: "10px 14px",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 12.5,
-            color: C.expense,
+            color: C.inkSoft,
           }}
         >
-          Necesitas al menos una cuenta antes de apuntar movimientos — créala en la pestaña Cuentas.
+          Puedes apuntar movimientos sin cuenta. Si creas cuentas en la pestaña Cuentas, se ajustará su saldo automáticamente.
         </p>
       )}
 
@@ -309,7 +310,7 @@ export default function Diario({
         />
         <button
           type="submit"
-          disabled={saving || !form.accountId}
+          disabled={saving}
           style={{
             display: "flex",
             alignItems: "center",
@@ -325,7 +326,7 @@ export default function Diario({
             fontSize: 13,
             cursor: "pointer",
             height: 37,
-            opacity: saving || !form.accountId ? 0.6 : 1,
+            opacity: saving ? 0.6 : 1,
           }}
         >
           <Plus size={15} /> Apuntar

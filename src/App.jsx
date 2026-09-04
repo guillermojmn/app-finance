@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { LayoutDashboard, BookText, Landmark, LogOut } from "lucide-react";
-import { supabase } from "./supabaseClient.js";
+import { supabase, runQuery, friendlyError } from "./supabaseClient.js";
 import { C, FONT_IMPORT, todayISO, CURRENCY } from "./lib/theme.js";
 import { useExchangeRates } from "./lib/exchangeRates.js";
 import { TabButton } from "./components/ui.jsx";
@@ -30,13 +30,30 @@ export default function App() {
     return () => listener.subscription.unsubscribe();
   }, []);
 
+  // Al volver a la app (móvil que estaba en segundo plano, pestaña reabierta),
+  // renueva la sesión para que el token no salga caducado en la primera petición.
+  useEffect(() => {
+    function refresh() {
+      if (document.visibilityState !== "visible") return;
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) setSession(data.session);
+      });
+    }
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, []);
+
   const loadData = useCallback(async (userId) => {
     setLoadingData(true);
     const [{ data: accs, error: accErr }, { data: txs, error: txErr }] = await Promise.all([
-      supabase.from("accounts").select("*").eq("user_id", userId).order("created_at"),
-      supabase.from("transactions").select("*").eq("user_id", userId).order("date", { ascending: false }),
+      runQuery(() => supabase.from("accounts").select("*").eq("user_id", userId).order("created_at")),
+      runQuery(() => supabase.from("transactions").select("*").eq("user_id", userId).order("date", { ascending: false })),
     ]);
-    if (accErr || txErr) setError((accErr || txErr).message);
+    if (accErr || txErr) setError(friendlyError(accErr || txErr));
     else setError(null);
     setAccounts(accs || []);
     setTransactions(txs || []);
@@ -63,29 +80,32 @@ export default function App() {
   }
 
   async function addTransaction(tx) {
-    const { data, error: err } = await supabase
-      .from("transactions")
-      .insert({ ...tx, user_id: session.user.id })
-      .select()
-      .single();
+    const { data, error: err } = await runQuery(() =>
+      supabase.from("transactions").insert({ ...tx, user_id: session.user.id }).select().single()
+    );
     if (err) {
-      setError(err.message);
-      return;
+      setError(friendlyError(err));
+      return false;
     }
+    setError(null);
     setTransactions((prev) => [data, ...prev]);
     if (data.account_id) {
       const account = accounts.find((a) => a.id === data.account_id);
       if (account) await applyBalanceAdjustments({ [data.account_id]: txEffect(data, account.currency) });
     }
+    return true;
   }
 
   async function updateTransaction(id, patch) {
     const old = transactions.find((t) => t.id === id);
-    const { data, error: err } = await supabase.from("transactions").update(patch).eq("id", id).select().single();
+    const { data, error: err } = await runQuery(() =>
+      supabase.from("transactions").update(patch).eq("id", id).select().single()
+    );
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err));
       return;
     }
+    setError(null);
     setTransactions((prev) => prev.map((t) => (t.id === id ? data : t)));
 
     const adjustments = {};
@@ -102,11 +122,12 @@ export default function App() {
 
   async function deleteTransaction(id) {
     const old = transactions.find((t) => t.id === id);
-    const { error: err } = await supabase.from("transactions").delete().eq("id", id);
+    const { error: err } = await runQuery(() => supabase.from("transactions").delete().eq("id", id));
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err));
       return;
     }
+    setError(null);
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     if (old?.account_id) {
       const account = accounts.find((a) => a.id === old.account_id);
@@ -115,33 +136,36 @@ export default function App() {
   }
 
   async function addAccount(acc) {
-    const { data, error: err } = await supabase
-      .from("accounts")
-      .insert({ ...acc, user_id: session.user.id })
-      .select()
-      .single();
+    const { data, error: err } = await runQuery(() =>
+      supabase.from("accounts").insert({ ...acc, user_id: session.user.id }).select().single()
+    );
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err));
       return;
     }
+    setError(null);
     setAccounts((prev) => [...prev, data]);
   }
 
   async function updateAccount(id, patch) {
-    const { data, error: err } = await supabase.from("accounts").update(patch).eq("id", id).select().single();
+    const { data, error: err } = await runQuery(() =>
+      supabase.from("accounts").update(patch).eq("id", id).select().single()
+    );
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err));
       return;
     }
+    setError(null);
     setAccounts((prev) => prev.map((a) => (a.id === id ? data : a)));
   }
 
   async function deleteAccount(id) {
-    const { error: err } = await supabase.from("accounts").delete().eq("id", id);
+    const { error: err } = await runQuery(() => supabase.from("accounts").delete().eq("id", id));
     if (err) {
-      setError(err.message);
+      setError(friendlyError(err));
       return;
     }
+    setError(null);
     setAccounts((prev) => prev.filter((a) => a.id !== id));
   }
 
