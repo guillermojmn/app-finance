@@ -1,10 +1,13 @@
 import { useState, useMemo } from "react";
-import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
+import { Plus, Trash2, Pencil, Check, X, CopyPlus } from "lucide-react";
 import {
   C,
   fmt,
   todayISO,
   monthOf,
+  monthShift,
+  daysInMonth,
+  normalizeDecimal,
   CURRENCIES,
   FIXED_SUGGESTIONS,
   VARIABLE_SUGGESTIONS,
@@ -43,6 +46,7 @@ export default function Diario({
   const [showAll, setShowAll] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [saving, setSaving] = useState(false);
+  const [copying, setCopying] = useState(false);
   const [editing, setEditing] = useState(null);
   const [editValues, setEditValues] = useState({
     date: "",
@@ -59,6 +63,38 @@ export default function Diario({
     ...accounts.map((a) => ({ value: a.id, label: `${a.name} (${a.currency || "CHF"})` })),
   ];
   const accountName = (id) => accounts.find((a) => a.id === id)?.name;
+
+  const prevMonth = monthShift(month, -1);
+  const pendingFixedCopy = useMemo(() => {
+    const prevFixed = transactions.filter((t) => t.type === "fixed" && monthOf(t.date) === prevMonth);
+    const alreadyThisMonth = new Set(
+      transactions
+        .filter((t) => t.type === "fixed" && monthOf(t.date) === month)
+        .map((t) => `${(t.description || "").trim().toLowerCase()}|${t.category || ""}`)
+    );
+    return prevFixed.filter((t) => !alreadyThisMonth.has(`${(t.description || "").trim().toLowerCase()}|${t.category || ""}`));
+  }, [transactions, month, prevMonth]);
+
+  async function copyFixedFromPrevMonth() {
+    if (!pendingFixedCopy.length) return;
+    const ok = window.confirm(`¿Copiar ${pendingFixedCopy.length} gasto(s) fijo(s) de ${prevMonth} a ${month}?`);
+    if (!ok) return;
+    setCopying(true);
+    const dim = daysInMonth(month);
+    for (const t of pendingFixedCopy) {
+      const day = Math.min(Number(t.date.slice(8, 10)) || 1, dim);
+      await addTransaction({
+        date: `${month}-${String(day).padStart(2, "0")}`,
+        description: t.description,
+        category: t.category,
+        type: "fixed",
+        amount: t.amount,
+        currency: t.currency || "CHF",
+        account_id: t.account_id || null,
+      });
+    }
+    setCopying(false);
+  }
 
   // Busca la última vez que apuntaste algo con esta misma descripción, para autocompletar.
   function findPreviousMatch(description) {
@@ -175,6 +211,34 @@ export default function Diario({
           <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
             Movimientos
           </h1>
+          {!showAll && pendingFixedCopy.length > 0 && (
+            <button
+              type="button"
+              onClick={copyFixedFromPrevMonth}
+              disabled={copying}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                marginTop: 8,
+                background: C.goldSoft,
+                color: C.gold,
+                border: `1px solid ${C.gold}`,
+                borderRadius: 20,
+                padding: "5px 12px",
+                fontFamily: "'IBM Plex Sans', sans-serif",
+                fontSize: 11.5,
+                fontWeight: 600,
+                cursor: "pointer",
+                opacity: copying ? 0.6 : 1,
+              }}
+            >
+              <CopyPlus size={13} />
+              {copying
+                ? "Copiando…"
+                : `Copiar ${pendingFixedCopy.length} gasto(s) fijo(s) de ${prevMonth}`}
+            </button>
+          )}
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <input
@@ -330,12 +394,11 @@ export default function Diario({
         )}
         <TextField
           label="Importe"
-          type="number"
-          step="0.01"
-          min="0"
+          type="text"
+          inputMode="decimal"
           placeholder="0.00"
           value={form.amount}
-          onChange={(e) => setForm({ ...form, amount: e.target.value })}
+          onChange={(e) => setForm({ ...form, amount: normalizeDecimal(e.target.value) })}
         />
         <SelectField
           label="Moneda"
@@ -474,10 +537,10 @@ export default function Diario({
                   )}
                   <TextField
                     label="Importe"
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     value={editValues.amount}
-                    onChange={(e) => setEditValues({ ...editValues, amount: e.target.value })}
+                    onChange={(e) => setEditValues({ ...editValues, amount: normalizeDecimal(e.target.value) })}
                   />
                   <SelectField
                     label="Moneda"

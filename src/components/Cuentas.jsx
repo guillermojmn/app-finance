@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
-import { C, fmt, CURRENCIES } from "../lib/theme.js";
+import { C, fmt, CURRENCIES, normalizeDecimal } from "../lib/theme.js";
 import { Eyebrow, Stamp, TextField, SelectField, IconBtn } from "./ui.jsx";
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
@@ -117,11 +117,11 @@ export default function Cuentas({
         />
         <TextField
           label="Saldo actual"
-          type="number"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           placeholder="0.00"
           value={form.balance}
-          onChange={(e) => setForm({ ...form, balance: e.target.value })}
+          onChange={(e) => setForm({ ...form, balance: normalizeDecimal(e.target.value) })}
         />
         <SelectField
           label="Moneda"
@@ -188,11 +188,11 @@ export default function Cuentas({
                   {editing === a.id ? (
                     <>
                       <input
-                        type="number"
-                        step="0.01"
+                        type="text"
+                        inputMode="decimal"
                         autoFocus
                         value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
+                        onChange={(e) => setEditValue(normalizeDecimal(e.target.value))}
                         style={{
                           width: 100,
                           fontFamily: "'IBM Plex Mono', monospace",

@@ -8,6 +8,7 @@ import Login from "./components/Login.jsx";
 import Resumen from "./components/Resumen.jsx";
 import Diario from "./components/Diario.jsx";
 import Cuentas from "./components/Cuentas.jsx";
+import QuickAdd from "./components/QuickAdd.jsx";
 
 export default function App() {
   const [session, setSession] = useState(undefined); // undefined = checking, null = signed out
@@ -19,6 +20,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [displayCurrency, setDisplayCurrency] = useState(() => localStorage.getItem("display-currency") || CURRENCY);
   const [theme, setTheme] = useState(() => getStoredTheme() || getSystemTheme());
+  const [quickMode, setQuickMode] = useState(() => new URLSearchParams(window.location.search).get("quick") === "1");
   const { convert, loading: ratesLoading } = useExchangeRates();
 
   // Muta C/TYPE_COLOR para este render antes de que los componentes hijos lean sus colores.
@@ -205,6 +207,20 @@ export default function App() {
   }
 
   if (!session) return <Login />;
+
+  if (quickMode) {
+    return (
+      <QuickAdd
+        accounts={accounts}
+        transactions={transactions}
+        addTransaction={addTransaction}
+        onExit={() => {
+          window.history.replaceState({}, "", window.location.pathname);
+          setQuickMode(false);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="ledger-shell" style={{ minHeight: "100vh", background: C.paper, display: "flex", fontFamily: "'IBM Plex Sans', sans-serif" }}>

@@ -110,6 +110,22 @@ export function monthOf(dateStr) {
   return (dateStr || "").slice(0, 7);
 }
 
+// Para que "," y "." valgan igual como separador decimal al escribir un importe.
+export function normalizeDecimal(str) {
+  return str.replace(",", ".");
+}
+
+export function monthShift(monthStr, delta) {
+  const [y, m] = monthStr.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+export function daysInMonth(monthStr) {
+  const [y, m] = monthStr.split("-").map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
 export const FIXED_SUGGESTIONS = ["Alquiler", "Seguro", "Suscripciones", "Gimnasio", "Teléfono", "Internet"];
 export const VARIABLE_SUGGESTIONS = ["Comida", "Transporte", "Ocio", "Compras", "Ropa", "Salud", "Viajes", "Cuenta conjunta"];
 export const INCOME_SUGGESTIONS = ["Salario", "Freelance", "Regalo", "Otros ingresos"];
