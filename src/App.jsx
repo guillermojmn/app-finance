@@ -72,14 +72,7 @@ export default function App() {
     setLoadingData(true);
     const [{ data: accs, error: accErr }, { data: txs, error: txErr }] = await Promise.all([
       runQuery(() => supabase.from("accounts").select("*").eq("user_id", userId).order("created_at")),
-      runQuery(() =>
-        supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", userId)
-          .order("date", { ascending: false })
-          .order("created_at", { ascending: false })
-      ),
+      runQuery(() => supabase.from("transactions").select("*").eq("user_id", userId).order("created_at", { ascending: false })),
     ]);
     if (accErr || txErr) setError(friendlyError(accErr || txErr));
     else setError(null);

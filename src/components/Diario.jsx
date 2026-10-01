@@ -123,11 +123,8 @@ export default function Diario({
   const rows = useMemo(() => {
     let filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
     if (typeFilter !== "all") filtered = filtered.filter((t) => t.type === typeFilter);
-    // Mismo día -> el más reciente (creado) va primero, así lo que acabas de apuntar sale arriba.
-    return [...filtered].sort((a, b) => {
-      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
-      return (b.created_at || "").localeCompare(a.created_at || "");
-    });
+    // Lo último que has apuntado va siempre arriba, aunque su fecha sea más antigua que otros movimientos.
+    return [...filtered].sort((a, b) => (b.created_at || "").localeCompare(a.created_at || ""));
   }, [transactions, month, showAll, typeFilter]);
 
   const categoryOptionsByType = useMemo(() => {
