@@ -79,7 +79,7 @@ export function TextField({ label, ...props }) {
           padding: "8px 10px",
           borderRadius: 3,
           border: `1px solid ${C.rule}`,
-          background: "#fff",
+          background: C.card,
           color: C.ink,
           outline: "none",
         }}
@@ -100,7 +100,7 @@ export function SelectField({ label, options, ...props }) {
           padding: "8px 10px",
           borderRadius: 3,
           border: `1px solid ${C.rule}`,
-          background: "#fff",
+          background: C.card,
           color: C.ink,
           outline: "none",
         }}

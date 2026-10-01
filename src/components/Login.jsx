@@ -99,6 +99,8 @@ export default function Login() {
                 padding: "9px 10px",
                 borderRadius: 3,
                 border: `1px solid ${C.rule}`,
+                background: C.card,
+                color: C.ink,
                 outline: "none",
               }}
             />
@@ -119,6 +121,8 @@ export default function Login() {
                   padding: "9px 34px 9px 10px",
                   borderRadius: 3,
                   border: `1px solid ${C.rule}`,
+                  background: C.card,
+                  color: C.ink,
                   outline: "none",
                 }}
               />

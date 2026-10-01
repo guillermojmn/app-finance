@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { LayoutDashboard, BookText, Landmark, LogOut } from "lucide-react";
+import { LayoutDashboard, BookText, Landmark, LogOut, Sun, Moon } from "lucide-react";
 import { supabase, runQuery, friendlyError } from "./supabaseClient.js";
-import { C, FONT_IMPORT, todayISO, CURRENCY } from "./lib/theme.js";
+import { C, FONT_IMPORT, todayISO, CURRENCY, applyTheme, getStoredTheme, getSystemTheme, storeTheme } from "./lib/theme.js";
 import { useExchangeRates } from "./lib/exchangeRates.js";
 import { TabButton } from "./components/ui.jsx";
 import Login from "./components/Login.jsx";
@@ -18,11 +18,30 @@ export default function App() {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState(null);
   const [displayCurrency, setDisplayCurrency] = useState(() => localStorage.getItem("display-currency") || CURRENCY);
+  const [theme, setTheme] = useState(() => getStoredTheme() || getSystemTheme());
   const { convert, loading: ratesLoading } = useExchangeRates();
+
+  // Muta C/TYPE_COLOR para este render antes de que los componentes hijos lean sus colores.
+  applyTheme(theme);
 
   useEffect(() => {
     localStorage.setItem("display-currency", displayCurrency);
   }, [displayCurrency]);
+
+  useEffect(() => {
+    storeTheme(theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", C.paper);
+  }, [theme]);
+
+  // Si el usuario no ha elegido tema a mano, sigue el del sistema cuando cambie.
+  useEffect(() => {
+    if (getStoredTheme()) return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e) => setTheme(e.matches ? "dark" : "light");
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -51,7 +70,14 @@ export default function App() {
     setLoadingData(true);
     const [{ data: accs, error: accErr }, { data: txs, error: txErr }] = await Promise.all([
       runQuery(() => supabase.from("accounts").select("*").eq("user_id", userId).order("created_at")),
-      runQuery(() => supabase.from("transactions").select("*").eq("user_id", userId).order("date", { ascending: false })),
+      runQuery(() =>
+        supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", userId)
+          .order("date", { ascending: false })
+          .order("created_at", { ascending: false })
+      ),
     ]);
     if (accErr || txErr) setError(friendlyError(accErr || txErr));
     else setError(null);
@@ -185,7 +211,9 @@ export default function App() {
       <style>{`
         ${FONT_IMPORT}
         * { box-sizing: border-box; }
+        html { color-scheme: ${theme}; }
         html, body, #root { height: 100%; margin: 0; }
+        body { background: ${C.paper}; }
         input:focus, select:focus, button:focus-visible { outline: 2px solid ${C.gold}; outline-offset: 1px; }
         .ledger-mobile-topbar, .ledger-mobile-bottomnav { display: none; }
         @media (max-width: 720px) {
@@ -208,9 +236,26 @@ export default function App() {
         <TabButton active={view === "diario"} onClick={() => setView("diario")} icon={BookText} label="Diario" hint="Todos los movimientos" />
         <TabButton active={view === "cuentas"} onClick={() => setView("cuentas")} icon={Landmark} label="Cuentas" hint="Saldos bancarios" />
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
           style={{
             marginTop: "auto",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            padding: "12px 16px",
+            border: "none",
+            background: "transparent",
+            color: C.inkSoft,
+            cursor: "pointer",
+            fontFamily: "'IBM Plex Sans', sans-serif",
+            fontSize: 12.5,
+          }}
+        >
+          {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />} {theme === "dark" ? "Modo claro" : "Modo oscuro"}
+        </button>
+        <button
+          onClick={() => supabase.auth.signOut()}
+          style={{
             display: "flex",
             alignItems: "center",
             gap: 8,
@@ -243,21 +288,38 @@ export default function App() {
             <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 16, color: C.ink }}>Cuentas</div>
             <div style={{ fontSize: 10, color: C.inkSoft, marginTop: 1 }}>{session.user.email}</div>
           </div>
-          <button
-            onClick={() => supabase.auth.signOut()}
-            title="Cerrar sesión"
-            style={{
-              border: `1px solid ${C.rule}`,
-              background: C.paperDeep,
-              color: C.inkSoft,
-              borderRadius: 5,
-              padding: 9,
-              cursor: "pointer",
-              display: "inline-flex",
-            }}
-          >
-            <LogOut size={16} />
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+              title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
+              style={{
+                border: `1px solid ${C.rule}`,
+                background: C.paperDeep,
+                color: C.inkSoft,
+                borderRadius: 5,
+                padding: 9,
+                cursor: "pointer",
+                display: "inline-flex",
+              }}
+            >
+              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              title="Cerrar sesión"
+              style={{
+                border: `1px solid ${C.rule}`,
+                background: C.paperDeep,
+                color: C.inkSoft,
+                borderRadius: 5,
+                padding: 9,
+                cursor: "pointer",
+                display: "inline-flex",
+              }}
+            >
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
 
         <main className="ledger-main" style={{ flex: 1, padding: "26px 30px 40px", minWidth: 0 }}>

@@ -200,6 +200,8 @@ export default function Cuentas({
                           padding: "6px 8px",
                           borderRadius: 3,
                           border: `1px solid ${C.rule}`,
+                          background: C.card,
+                          color: C.ink,
                         }}
                       />
                       <select
@@ -211,7 +213,7 @@ export default function Cuentas({
                           padding: "6px 6px",
                           borderRadius: 3,
                           border: `1px solid ${C.rule}`,
-                          background: "#fff",
+                          background: C.card,
                           color: C.ink,
                         }}
                       >

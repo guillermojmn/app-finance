@@ -1,8 +1,11 @@
-import { useMemo } from "react";
-import { C, fmt, monthOf, CURRENCIES } from "../lib/theme.js";
+import { useMemo, useState } from "react";
+import { C, fmt, monthOf, CURRENCIES, chartColor } from "../lib/theme.js";
 import { Eyebrow, Stamp } from "./ui.jsx";
 
+const SHOW_CHART_KEY = "ledger-show-chart";
+
 export default function Resumen({ transactions, accounts, month, setMonth, displayCurrency, setDisplayCurrency, convert, ratesLoading }) {
+  const [showChart, setShowChart] = useState(() => localStorage.getItem(SHOW_CHART_KEY) === "1");
   const monthTx = useMemo(() => transactions.filter((t) => monthOf(t.date) === month), [transactions, month]);
 
   const inDisplay = (t) => convert(t.amount, t.currency || "CHF", displayCurrency);
@@ -26,6 +29,27 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monthTx, displayCurrency]);
   const maxCat = Math.max(1, ...byCategory.map((c) => c[1]));
+  const totalCat = byCategory.reduce((s, [, amt]) => s + amt, 0);
+
+  function toggleChart() {
+    setShowChart((v) => {
+      const next = !v;
+      localStorage.setItem(SHOW_CHART_KEY, next ? "1" : "0");
+      return next;
+    });
+  }
+
+  const donutGradient = useMemo(() => {
+    if (!byCategory.length || !totalCat) return null;
+    let acc = 0;
+    const stops = byCategory.map(([, amt], i) => {
+      const start = acc;
+      acc += (amt / totalCat) * 100;
+      return `${chartColor(i)} ${start}% ${acc}%`;
+    });
+    return `conic-gradient(${stops.join(", ")})`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [byCategory, totalCat]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -88,29 +112,101 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
       <Stamp label="Patrimonio total (todas las cuentas)" value={patrimonio} tone="gold" big currency={displayCurrency} />
 
       <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "18px 20px" }}>
-        <Eyebrow>Gastos variables por categoría</Eyebrow>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+          <Eyebrow>Gastos variables por categoría</Eyebrow>
+          {byCategory.length > 0 && (
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: 11.5,
+                color: C.inkSoft,
+                fontFamily: "'IBM Plex Sans', sans-serif",
+                cursor: "pointer",
+              }}
+            >
+              <input type="checkbox" checked={showChart} onChange={toggleChart} />
+              Ver gráfico
+            </label>
+          )}
+        </div>
         {byCategory.length === 0 ? (
           <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: C.inkSoft, marginTop: 10 }}>
             Aún no hay gastos variables este mes.
           </p>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
-            {byCategory.map(([cat, amt]) => (
-              <div key={cat} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                  <span style={{ fontSize: 12.5, fontFamily: "'IBM Plex Sans', sans-serif", color: C.ink, fontWeight: 600 }}>
-                    {cat}
-                  </span>
-                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontVariantNumeric: "tabular-nums", fontSize: 12.5, color: C.ink }}>
-                    {fmt(amt)} {displayCurrency}
-                  </span>
-                </div>
-                <div style={{ background: C.paperDeep, borderRadius: 3, height: 8, overflow: "hidden" }}>
-                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 3 }} />
+          <>
+            {showChart && donutGradient && (
+              <div style={{ display: "flex", justifyContent: "center", padding: "18px 0 6px" }}>
+                <div style={{ position: "relative", width: 160, height: 160 }}>
+                  <div style={{ width: 160, height: 160, borderRadius: "50%", background: donutGradient }} />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 26,
+                      borderRadius: "50%",
+                      background: C.card,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: 10, color: C.inkSoft, fontFamily: "'IBM Plex Sans', sans-serif" }}>Total</span>
+                    <span
+                      style={{
+                        fontFamily: "'IBM Plex Mono', monospace",
+                        fontVariantNumeric: "tabular-nums",
+                        fontWeight: 600,
+                        fontSize: 13,
+                        color: C.ink,
+                      }}
+                    >
+                      {fmt(totalCat)} {displayCurrency}
+                    </span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+              {byCategory.map(([cat, amt], i) => (
+                <div key={cat} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        fontSize: 12.5,
+                        fontFamily: "'IBM Plex Sans', sans-serif",
+                        color: C.ink,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {showChart && (
+                        <span style={{ width: 8, height: 8, borderRadius: "50%", background: chartColor(i), flexShrink: 0 }} />
+                      )}
+                      {cat}
+                    </span>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontVariantNumeric: "tabular-nums", fontSize: 12.5, color: C.ink }}>
+                      {fmt(amt)} {displayCurrency}
+                    </span>
+                  </div>
+                  <div style={{ background: C.paperDeep, borderRadius: 3, height: 8, overflow: "hidden" }}>
+                    <div
+                      style={{
+                        width: `${(amt / maxCat) * 100}%`,
+                        background: showChart ? chartColor(i) : C.expense,
+                        height: "100%",
+                        borderRadius: 3,
+                      }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>

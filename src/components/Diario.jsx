@@ -60,23 +60,53 @@ export default function Diario({
   ];
   const accountName = (id) => accounts.find((a) => a.id === id)?.name;
 
+  // Busca la última vez que apuntaste algo con esta misma descripción, para autocompletar.
+  function findPreviousMatch(description) {
+    const needle = description.trim().toLowerCase();
+    if (!needle) return null;
+    const matches = transactions.filter((t) => (t.description || "").trim().toLowerCase() === needle);
+    if (!matches.length) return null;
+    return matches.sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.created_at || "").localeCompare(a.created_at || "");
+    })[0];
+  }
+
+  function applyMatchToForm(match) {
+    const knownCat = match.category && categoryOptionsByType[match.type]?.includes(match.category);
+    setForm((f) => ({
+      ...f,
+      type: match.type,
+      category: match.category ? (knownCat ? match.category : OTHER) : "",
+      customCategory: match.category && !knownCat ? match.category : "",
+      currency: match.currency || f.currency,
+      accountId: f.accountId || match.account_id || "",
+    }));
+  }
+
   const rows = useMemo(() => {
     let filtered = showAll ? transactions : transactions.filter((t) => monthOf(t.date) === month);
     if (typeFilter !== "all") filtered = filtered.filter((t) => t.type === typeFilter);
-    return [...filtered].sort((a, b) => (a.date < b.date ? 1 : -1));
+    // Mismo día -> el más reciente (creado) va primero, así lo que acabas de apuntar sale arriba.
+    return [...filtered].sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (b.created_at || "").localeCompare(a.created_at || "");
+    });
   }, [transactions, month, showAll, typeFilter]);
 
   const categoryOptionsByType = useMemo(() => {
     const sets = { income: new Set(INCOME_SUGGESTIONS), fixed: new Set(FIXED_SUGGESTIONS), variable: new Set(VARIABLE_SUGGESTIONS) };
     transactions.forEach((t) => {
-      if (t.category && sets[t.type]) sets[t.type].add(t.category);
+      if (!t.category || !sets[t.type]) return;
+      if (!showAll && monthOf(t.date) !== month) return; // las categorías nuevas solo viven en su mes
+      sets[t.type].add(t.category);
     });
     return {
       income: [...sets.income].sort(),
       fixed: [...sets.fixed].sort(),
       variable: [...sets.variable].sort(),
     };
-  }, [transactions]);
+  }, [transactions, month, showAll]);
 
   async function submit(e) {
     e.preventDefault();
@@ -263,6 +293,11 @@ export default function Diario({
           placeholder="p. ej. Migros"
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
+          onBlur={() => {
+            if (form.category || form.type !== "variable" || form.currency !== "CHF") return;
+            const match = findPreviousMatch(form.description);
+            if (match) applyMatchToForm(match);
+          }}
         />
         <SelectField
           label="Tipo"
