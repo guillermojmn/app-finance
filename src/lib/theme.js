@@ -33,20 +33,9 @@ const PALETTES = {
   },
 };
 
-// Paleta para los gráficos por categoría (orden estable, se recicla si hay más categorías que colores).
-const CHART_PALETTES = {
-  light: ["#A6432F", "#B8912B", "#2F6F5E", "#5B6E95", "#8A5A2A", "#6B4C7A", "#3F7A6B", "#9A5B6F"],
-  dark: ["#E0876D", "#D9B354", "#56B695", "#8FA6D9", "#C98A4B", "#AA8AC9", "#5FBFA9", "#CB8AA6"],
-};
-
 export const C = { ...PALETTES.light };
 export const TYPE_LABEL = { income: "Ingreso", fixed: "Fijo", variable: "Variable" };
 export const TYPE_COLOR = { income: C.income, fixed: C.expense, variable: C.variable };
-export const CHART_COLORS = [...CHART_PALETTES.light];
-
-export function chartColor(index) {
-  return CHART_COLORS[index % CHART_COLORS.length];
-}
 
 const THEME_KEY = "ledger-theme";
 
@@ -82,10 +71,6 @@ export function applyTheme(mode) {
   TYPE_COLOR.income = C.income;
   TYPE_COLOR.fixed = C.expense;
   TYPE_COLOR.variable = C.variable;
-  const chartPalette = mode === "dark" ? CHART_PALETTES.dark : CHART_PALETTES.light;
-  chartPalette.forEach((color, i) => {
-    CHART_COLORS[i] = color;
-  });
 }
 
 // Aplica el tema ya antes del primer render para que no haya parpadeo de claro -> oscuro.

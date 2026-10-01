@@ -32,6 +32,7 @@ export default function Diario({
   setDisplayCurrency,
   convert,
   ratesLoading,
+  recentIds,
 }) {
   const [form, setForm] = useState({
     date: todayISO(),
@@ -202,6 +203,14 @@ export default function Diario({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <style>{`
+        @keyframes ledgerArrive {
+          0% { transform: scale(0.96) translateY(-6px); box-shadow: 0 0 0 0 ${C.gold}00; background: ${C.goldSoft}; }
+          25% { transform: scale(1.012) translateY(0); box-shadow: 0 0 22px 2px ${C.gold}80; background: ${C.goldSoft}; }
+          100% { transform: scale(1) translateY(0); box-shadow: 0 0 0 0 ${C.gold}00; background: ${C.card}; }
+        }
+        .ledger-row-new { animation: ledgerArrive 1.3s cubic-bezier(.2,.8,.2,1); border-color: ${C.gold} !important; }
+      `}</style>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
           <Eyebrow>Diario</Eyebrow>
@@ -447,6 +456,7 @@ export default function Diario({
           rows.map((t) => (
             <div
               key={t.id}
+              className={recentIds?.has(t.id) ? "ledger-row-new" : undefined}
               style={{
                 background: C.card,
                 border: `1px solid ${C.rule}`,

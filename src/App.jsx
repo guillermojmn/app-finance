@@ -85,6 +85,48 @@ export default function App() {
     if (session?.user?.id) loadData(session.user.id);
   }, [session, loadData]);
 
+  // Escucha cambios en tiempo real en "transactions" (p. ej. los que llegan desde el Atajo de iPhone)
+  // para que aparezcan solos sin tener que recargar la página.
+  useEffect(() => {
+    const userId = session?.user?.id;
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`transactions-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "transactions", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setTransactions((prev) => (prev.some((t) => t.id === payload.new.id) ? prev : [payload.new, ...prev]));
+            markRecent(payload.new.id);
+          } else if (payload.eventType === "UPDATE") {
+            setTransactions((prev) => prev.map((t) => (t.id === payload.new.id ? payload.new : t)));
+          } else if (payload.eventType === "DELETE") {
+            setTransactions((prev) => prev.filter((t) => t.id !== payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [session?.user?.id]);
+
+  // IDs de movimientos recién llegados (propios o por tiempo real) para animarlos un momento en el Diario.
+  const [recentIds, setRecentIds] = useState(() => new Set());
+  function markRecent(id) {
+    setRecentIds((prev) => new Set(prev).add(id));
+    setTimeout(() => {
+      setRecentIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }, 1400);
+  }
+
   // Positivo = ingreso a la cuenta, negativo = gasto de la cuenta.
   function txEffect(tx, accountCurrency) {
     const sign = tx.type === "income" ? 1 : -1;
@@ -110,6 +152,7 @@ export default function App() {
     }
     setError(null);
     setTransactions((prev) => [data, ...prev]);
+    markRecent(data.id);
     if (data.account_id) {
       const account = accounts.find((a) => a.id === data.account_id);
       if (account) await applyBalanceAdjustments({ [data.account_id]: txEffect(data, account.currency) });
@@ -373,6 +416,7 @@ export default function App() {
             setDisplayCurrency={setDisplayCurrency}
             convert={convert}
             ratesLoading={ratesLoading}
+            recentIds={recentIds}
           />
         ) : (
           <Cuentas

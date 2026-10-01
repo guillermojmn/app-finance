@@ -15,7 +15,7 @@ export default function Cuentas({
   convert,
   ratesLoading,
 }) {
-  const [form, setForm] = useState({ name: "", type: "corriente", balance: "", currency: displayCurrency });
+  const [form, setForm] = useState({ name: "", balance: "", currency: displayCurrency });
   const [editing, setEditing] = useState(null);
   const [editValue, setEditValue] = useState("");
   const [editCurrency, setEditCurrency] = useState(displayCurrency);
@@ -24,8 +24,6 @@ export default function Cuentas({
   const inDisplay = (a) => convert(a.balance, a.currency || "CHF", displayCurrency);
 
   const total = accounts.reduce((s, a) => s + inDisplay(a), 0);
-  const corriente = accounts.filter((a) => a.type === "corriente").reduce((s, a) => s + inDisplay(a), 0);
-  const ahorro = accounts.filter((a) => a.type === "ahorro").reduce((s, a) => s + inDisplay(a), 0);
 
   async function submit(e) {
     e.preventDefault();
@@ -33,12 +31,12 @@ export default function Cuentas({
     setSaving(true);
     await addAccount({
       name: form.name.trim(),
-      type: form.type,
+      type: "corriente",
       balance: Number(form.balance) || 0,
       currency: form.currency,
     });
     setSaving(false);
-    setForm({ name: "", type: "corriente", balance: "", currency: displayCurrency });
+    setForm({ name: "", balance: "", currency: displayCurrency });
   }
 
   async function saveEdit(id) {
@@ -80,11 +78,7 @@ export default function Cuentas({
         </label>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12 }}>
-        <Stamp label="Cuentas corrientes" value={corriente} tone="ink" currency={displayCurrency} />
-        <Stamp label="Cuentas de ahorro" value={ahorro} tone="gold" currency={displayCurrency} />
-        <Stamp label="Patrimonio total" value={total} tone="income" big currency={displayCurrency} />
-      </div>
+      <Stamp label="Patrimonio total" value={total} tone="income" big currency={displayCurrency} />
 
       <form
         onSubmit={submit}
@@ -105,15 +99,6 @@ export default function Cuentas({
           placeholder="p. ej. UBS Privatkonto"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
-        />
-        <SelectField
-          label="Tipo"
-          value={form.type}
-          onChange={(e) => setForm({ ...form, type: e.target.value })}
-          options={[
-            { value: "corriente", label: "Corriente" },
-            { value: "ahorro", label: "Ahorro" },
-          ]}
         />
         <TextField
           label="Saldo actual"
@@ -182,7 +167,6 @@ export default function Cuentas({
                   <div style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontWeight: 600, fontSize: 14, color: C.ink }}>
                     {a.name}
                   </div>
-                  <div style={{ fontSize: 11, color: C.inkSoft, textTransform: "capitalize" }}>{a.type}</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                   {editing === a.id ? (
