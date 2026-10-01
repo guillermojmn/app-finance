@@ -1,37 +1,40 @@
 const PALETTES = {
   light: {
-    paper: "#EEF1EA",
-    paperDeep: "#E4E8DF",
-    card: "#FBFAF7",
-    ink: "#202B22",
-    inkSoft: "#5B6A5C",
-    rule: "#C7CEC1",
-    ruleStrong: "#9AA694",
-    income: "#2F6F5E",
-    incomeSoft: "#E4EFEA",
-    expense: "#A6432F",
-    expenseSoft: "#F3E5E0",
-    gold: "#B8912B",
-    goldSoft: "#F1E8D2",
-    variable: "#8A5A2A",
+    paper: "#F4F5F7",
+    paperDeep: "#E7E9ED",
+    card: "#FFFFFF",
+    ink: "#10151A",
+    inkSoft: "#6B7280",
+    rule: "#E4E6EA",
+    ruleStrong: "#D4D7DC",
+    income: "#1BAA5C",
+    incomeSoft: "#E3F7EC",
+    expense: "#E0333F",
+    expenseSoft: "#FBE7E8",
+    gold: "#E08A1E",
+    goldSoft: "#FDEEDB",
+    variable: "#3A6CF0",
   },
   dark: {
-    paper: "#1B211C",
-    paperDeep: "#141813",
-    card: "#242B24",
-    ink: "#E8ECE4",
-    inkSoft: "#9BAA98",
-    rule: "#343F35",
-    ruleStrong: "#4A564B",
-    income: "#56B695",
-    incomeSoft: "#1D3A30",
-    expense: "#E0876D",
-    expenseSoft: "#3A241D",
-    gold: "#D9B354",
-    goldSoft: "#3A2F17",
-    variable: "#C98A4B",
+    paper: "#0B0D0E",
+    paperDeep: "#060708",
+    card: "#16191B",
+    ink: "#F2F4F2",
+    inkSoft: "#8A9290",
+    rule: "#23272A",
+    ruleStrong: "#2F3437",
+    income: "#2ED47A",
+    incomeSoft: "#13301F",
+    expense: "#FF5C5C",
+    expenseSoft: "#341414",
+    gold: "#FFB648",
+    goldSoft: "#3A2A0E",
+    variable: "#5B8CFF",
   },
 };
+
+// Radios de las tarjetas/campos planos del nuevo estilo "fintech".
+export const RADIUS = { card: 16, field: 12, pill: 20 };
 
 export const C = { ...PALETTES.light };
 export const TYPE_LABEL = { income: "Ingreso", fixed: "Fijo", variable: "Variable" };
@@ -77,7 +80,9 @@ export function applyTheme(mode) {
 applyTheme(getStoredTheme() || getSystemTheme());
 
 export const FONT_IMPORT =
-  "@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');";
+  "@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');";
+
+export const HEADING_FONT = "'Space Grotesk', sans-serif";
 
 export const CURRENCY = "CHF";
 export const CURRENCIES = ["CHF", "EUR", "USD"];

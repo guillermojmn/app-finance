@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Plus, Trash2, Pencil, Check, X } from "lucide-react";
-import { C, fmt, CURRENCIES, normalizeDecimal } from "../lib/theme.js";
+import { C, fmt, CURRENCIES, normalizeDecimal, HEADING_FONT, RADIUS } from "../lib/theme.js";
 import { Eyebrow, Stamp, TextField, SelectField, IconBtn } from "./ui.jsx";
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c, label: c }));
@@ -49,7 +49,7 @@ export default function Cuentas({
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
           <Eyebrow>Cuentas</Eyebrow>
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
+          <h1 style={{ fontFamily: HEADING_FONT, fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
             Cuentas bancarias
           </h1>
         </div>
@@ -61,9 +61,9 @@ export default function Cuentas({
             style={{
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 13,
-              padding: "6px 8px",
-              borderRadius: 3,
-              border: `1px solid ${C.rule}`,
+              padding: "7px 10px",
+              borderRadius: RADIUS.field,
+              border: "none",
               background: C.card,
               color: C.ink,
             }}
@@ -84,9 +84,8 @@ export default function Cuentas({
         onSubmit={submit}
         style={{
           background: C.card,
-          border: `1px solid ${C.rule}`,
-          borderRadius: 4,
-          padding: 16,
+          borderRadius: RADIUS.card,
+          padding: 18,
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
           gap: 10,
@@ -125,13 +124,13 @@ export default function Cuentas({
             background: C.ink,
             color: C.paper,
             border: "none",
-            borderRadius: 3,
+            borderRadius: RADIUS.field,
             padding: "9px 14px",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontWeight: 600,
             fontSize: 13,
             cursor: "pointer",
-            height: 37,
+            height: 39,
             opacity: saving ? 0.6 : 1,
           }}
         >
@@ -154,9 +153,8 @@ export default function Cuentas({
                 key={a.id}
                 style={{
                   background: C.card,
-                  border: `1px solid ${C.rule}`,
-                  borderRadius: 4,
-                  padding: "14px 18px",
+                  borderRadius: RADIUS.card,
+                  padding: "16px 20px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -181,10 +179,10 @@ export default function Cuentas({
                           width: 100,
                           fontFamily: "'IBM Plex Mono', monospace",
                           fontSize: 13,
-                          padding: "6px 8px",
-                          borderRadius: 3,
-                          border: `1px solid ${C.rule}`,
-                          background: C.card,
+                          padding: "7px 10px",
+                          borderRadius: RADIUS.field,
+                          border: "none",
+                          background: C.paperDeep,
                           color: C.ink,
                         }}
                       />
@@ -194,10 +192,10 @@ export default function Cuentas({
                         style={{
                           fontFamily: "'IBM Plex Mono', monospace",
                           fontSize: 12.5,
-                          padding: "6px 6px",
-                          borderRadius: 3,
-                          border: `1px solid ${C.rule}`,
-                          background: C.card,
+                          padding: "7px 8px",
+                          borderRadius: RADIUS.field,
+                          border: "none",
+                          background: C.paperDeep,
                           color: C.ink,
                         }}
                       >

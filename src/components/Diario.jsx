@@ -14,6 +14,8 @@ import {
   INCOME_SUGGESTIONS,
   TYPE_LABEL,
   TYPE_COLOR,
+  HEADING_FONT,
+  RADIUS,
 } from "../lib/theme.js";
 import { Eyebrow, TextField, SelectField, IconBtn } from "./ui.jsx";
 
@@ -214,7 +216,7 @@ export default function Diario({
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
           <Eyebrow>Diario</Eyebrow>
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
+          <h1 style={{ fontFamily: HEADING_FONT, fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
             Movimientos
           </h1>
           {!showAll && pendingFixedCopy.length > 0 && (
@@ -229,9 +231,9 @@ export default function Diario({
                 marginTop: 8,
                 background: C.goldSoft,
                 color: C.gold,
-                border: `1px solid ${C.gold}`,
-                borderRadius: 20,
-                padding: "5px 12px",
+                border: "none",
+                borderRadius: RADIUS.pill,
+                padding: "6px 14px",
                 fontFamily: "'IBM Plex Sans', sans-serif",
                 fontSize: 11.5,
                 fontWeight: 600,
@@ -255,9 +257,9 @@ export default function Diario({
             style={{
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 13,
-              padding: "7px 10px",
-              borderRadius: 3,
-              border: `1px solid ${C.rule}`,
+              padding: "8px 12px",
+              borderRadius: RADIUS.field,
+              border: "none",
               background: showAll ? C.paperDeep : C.card,
               color: C.ink,
               opacity: showAll ? 0.5 : 1,
@@ -275,9 +277,9 @@ export default function Diario({
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 13,
-                padding: "6px 8px",
-                borderRadius: 3,
-                border: `1px solid ${C.rule}`,
+                padding: "7px 10px",
+                borderRadius: RADIUS.field,
+                border: "none",
                 background: C.card,
                 color: C.ink,
               }}
@@ -309,8 +311,8 @@ export default function Diario({
               fontSize: 12,
               fontWeight: 600,
               padding: "6px 12px",
-              borderRadius: 20,
-              border: `1px solid ${typeFilter === f.value ? C.ink : C.rule}`,
+              borderRadius: RADIUS.pill,
+              border: "none",
               background: typeFilter === f.value ? C.ink : C.card,
               color: typeFilter === f.value ? C.paper : C.inkSoft,
               cursor: "pointer",
@@ -325,9 +327,8 @@ export default function Diario({
         <p
           style={{
             background: C.paperDeep,
-            border: `1px solid ${C.rule}`,
-            borderRadius: 4,
-            padding: "10px 14px",
+            borderRadius: RADIUS.field,
+            padding: "12px 16px",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontSize: 12.5,
             color: C.inkSoft,
@@ -341,9 +342,8 @@ export default function Diario({
         onSubmit={submit}
         style={{
           background: C.card,
-          border: `1px solid ${C.rule}`,
-          borderRadius: 4,
-          padding: 16,
+          borderRadius: RADIUS.card,
+          padding: 18,
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
           gap: 10,
@@ -423,13 +423,13 @@ export default function Diario({
             background: C.ink,
             color: C.paper,
             border: "none",
-            borderRadius: 3,
+            borderRadius: RADIUS.field,
             padding: "9px 14px",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontWeight: 600,
             fontSize: 13,
             cursor: "pointer",
-            height: 37,
+            height: 39,
             opacity: saving ? 0.6 : 1,
           }}
         >
@@ -442,8 +442,7 @@ export default function Diario({
           <p
             style={{
               background: C.card,
-              border: `1px solid ${C.rule}`,
-              borderRadius: 4,
+              borderRadius: RADIUS.card,
               padding: 20,
               fontFamily: "'IBM Plex Sans', sans-serif",
               fontSize: 13,
@@ -459,9 +458,8 @@ export default function Diario({
               className={recentIds?.has(t.id) ? "ledger-row-new" : undefined}
               style={{
                 background: C.card,
-                border: `1px solid ${C.rule}`,
-                borderRadius: 4,
-                padding: "12px 14px",
+                borderRadius: RADIUS.card,
+                padding: "14px 16px",
                 display: "flex",
                 flexDirection: "column",
                 gap: 6,
@@ -476,9 +474,9 @@ export default function Diario({
                       fontSize: 10.5,
                       fontWeight: 600,
                       color: TYPE_COLOR[t.type],
-                      border: `1px solid ${TYPE_COLOR[t.type]}55`,
-                      borderRadius: 20,
-                      padding: "2px 8px",
+                      background: `${TYPE_COLOR[t.type]}1f`,
+                      borderRadius: RADIUS.pill,
+                      padding: "3px 9px",
                     }}
                   >
                     {TYPE_LABEL[t.type]}

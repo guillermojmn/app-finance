@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../supabaseClient.js";
-import { C, FONT_IMPORT } from "../lib/theme.js";
+import { C, FONT_IMPORT, HEADING_FONT, RADIUS } from "../lib/theme.js";
 
 export default function Login() {
   const [mode, setMode] = useState("signin"); // signin | signup
@@ -44,14 +44,13 @@ export default function Login() {
       <div
         style={{
           background: C.card,
-          border: `1px solid ${C.rule}`,
-          borderRadius: 6,
+          borderRadius: 22,
           padding: "32px 28px",
           width: "100%",
           maxWidth: 360,
         }}
       >
-        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 22, color: C.ink }}>Cuentas</div>
+        <div style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 22, color: C.ink }}>Cuentas</div>
         <div style={{ fontSize: 12.5, color: C.inkSoft, marginTop: 4, marginBottom: 22 }}>
           Tu cuenta personal de gastos, ingresos y ahorro.
         </div>
@@ -96,10 +95,10 @@ export default function Login() {
               placeholder="tu@email.com"
               style={{
                 fontSize: 13.5,
-                padding: "9px 10px",
-                borderRadius: 3,
-                border: `1px solid ${C.rule}`,
-                background: C.card,
+                padding: "10px 12px",
+                borderRadius: RADIUS.field,
+                border: "none",
+                background: C.paperDeep,
                 color: C.ink,
                 outline: "none",
               }}
@@ -118,10 +117,10 @@ export default function Login() {
                 style={{
                   width: "100%",
                   fontSize: 13.5,
-                  padding: "9px 34px 9px 10px",
-                  borderRadius: 3,
-                  border: `1px solid ${C.rule}`,
-                  background: C.card,
+                  padding: "10px 34px 10px 12px",
+                  borderRadius: RADIUS.field,
+                  border: "none",
+                  background: C.paperDeep,
                   color: C.ink,
                   outline: "none",
                 }}
@@ -154,8 +153,8 @@ export default function Login() {
               background: C.ink,
               color: C.paper,
               border: "none",
-              borderRadius: 3,
-              padding: "10px 14px",
+              borderRadius: RADIUS.field,
+              padding: "11px 14px",
               fontWeight: 600,
               fontSize: 13.5,
               cursor: "pointer",

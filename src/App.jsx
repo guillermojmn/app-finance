@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LayoutDashboard, BookText, Landmark, LogOut, Sun, Moon } from "lucide-react";
 import { supabase, runQuery, friendlyError } from "./supabaseClient.js";
-import { C, FONT_IMPORT, todayISO, CURRENCY, applyTheme, getStoredTheme, getSystemTheme, storeTheme } from "./lib/theme.js";
+import { C, FONT_IMPORT, HEADING_FONT, RADIUS, todayISO, CURRENCY, applyTheme, getStoredTheme, storeTheme } from "./lib/theme.js";
 import { useExchangeRates } from "./lib/exchangeRates.js";
 import { TabButton } from "./components/ui.jsx";
 import Login from "./components/Login.jsx";
@@ -19,7 +19,7 @@ export default function App() {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState(null);
   const [displayCurrency, setDisplayCurrency] = useState(() => localStorage.getItem("display-currency") || CURRENCY);
-  const [theme, setTheme] = useState(() => getStoredTheme() || getSystemTheme());
+  const [theme, setTheme] = useState(() => getStoredTheme() || "dark");
   const [quickMode, setQuickMode] = useState(() => new URLSearchParams(window.location.search).get("quick") === "1");
   const { convert, loading: ratesLoading } = useExchangeRates();
 
@@ -35,15 +35,6 @@ export default function App() {
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute("content", C.paper);
   }, [theme]);
-
-  // Si el usuario no ha elegido tema a mano, sigue el del sistema cuando cambie.
-  useEffect(() => {
-    if (getStoredTheme()) return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = (e) => setTheme(e.matches ? "dark" : "light");
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -278,10 +269,10 @@ export default function App() {
 
       <nav
         className="ledger-nav"
-        style={{ width: 200, flexShrink: 0, borderRight: `1px solid ${C.rule}`, paddingTop: 18, display: "flex", flexDirection: "column", gap: 2 }}
+        style={{ width: 210, flexShrink: 0, background: C.card, paddingTop: 18, paddingBottom: 12, display: "flex", flexDirection: "column", gap: 2 }}
       >
         <div style={{ padding: "0 16px 16px" }}>
-          <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 17, color: C.ink }}>Cuentas</div>
+          <div style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 17, color: C.ink }}>Cuentas</div>
           <div style={{ fontSize: 10.5, color: C.inkSoft, marginTop: 2 }}>{session.user.email}</div>
         </div>
         <TabButton active={view === "resumen"} onClick={() => setView("resumen")} icon={LayoutDashboard} label="Resumen" hint="Cuenta de explotación" />
@@ -294,8 +285,10 @@ export default function App() {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            padding: "12px 16px",
+            padding: "11px 14px",
+            margin: "0 10px",
             border: "none",
+            borderRadius: RADIUS.field,
             background: "transparent",
             color: C.inkSoft,
             cursor: "pointer",
@@ -311,8 +304,10 @@ export default function App() {
             display: "flex",
             alignItems: "center",
             gap: 8,
-            padding: "12px 16px",
+            padding: "11px 14px",
+            margin: "0 10px",
             border: "none",
+            borderRadius: RADIUS.field,
             background: "transparent",
             color: C.inkSoft,
             cursor: "pointer",
@@ -332,12 +327,11 @@ export default function App() {
             justifyContent: "space-between",
             padding: "12px 16px",
             paddingTop: "calc(12px + env(safe-area-inset-top))",
-            borderBottom: `1px solid ${C.rule}`,
             background: C.card,
           }}
         >
           <div>
-            <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 16, color: C.ink }}>Cuentas</div>
+            <div style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 16, color: C.ink }}>Cuentas</div>
             <div style={{ fontSize: 10, color: C.inkSoft, marginTop: 1 }}>{session.user.email}</div>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -345,10 +339,10 @@ export default function App() {
               onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
               title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
               style={{
-                border: `1px solid ${C.rule}`,
+                border: "none",
                 background: C.paperDeep,
                 color: C.inkSoft,
-                borderRadius: 5,
+                borderRadius: RADIUS.field,
                 padding: 9,
                 cursor: "pointer",
                 display: "inline-flex",
@@ -360,10 +354,10 @@ export default function App() {
               onClick={() => supabase.auth.signOut()}
               title="Cerrar sesión"
               style={{
-                border: `1px solid ${C.rule}`,
+                border: "none",
                 background: C.paperDeep,
                 color: C.inkSoft,
-                borderRadius: 5,
+                borderRadius: RADIUS.field,
                 padding: 9,
                 cursor: "pointer",
                 display: "inline-flex",
@@ -379,12 +373,12 @@ export default function App() {
           <div
             style={{
               marginBottom: 16,
-              padding: "10px 14px",
-              borderRadius: 4,
-              border: `1px solid ${C.expense}`,
+              padding: "12px 16px",
+              borderRadius: RADIUS.field,
               background: C.expenseSoft,
               color: C.expense,
               fontSize: 12.5,
+              fontWeight: 600,
             }}
           >
             {error}
@@ -439,7 +433,6 @@ export default function App() {
             bottom: 0,
             left: 0,
             right: 0,
-            borderTop: `1px solid ${C.rule}`,
             background: C.card,
             paddingBottom: "env(safe-area-inset-bottom)",
             zIndex: 10,

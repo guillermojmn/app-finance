@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Wallet, X, Check } from "lucide-react";
-import { C, FONT_IMPORT, todayISO, normalizeDecimal } from "../lib/theme.js";
+import { C, FONT_IMPORT, HEADING_FONT, RADIUS, todayISO, normalizeDecimal } from "../lib/theme.js";
 
 // Busca la última vez que apuntaste algo igual (mismo tipo + misma descripción) para rellenar la categoría solo.
 function findPreviousMatch(transactions, description, type) {
@@ -54,9 +54,9 @@ export default function QuickAdd({ accounts, transactions, addTransaction, onExi
   const inputStyle = {
     fontFamily: "'IBM Plex Sans', sans-serif",
     fontSize: 16,
-    padding: "12px 14px",
-    borderRadius: 6,
-    border: `1px solid ${C.rule}`,
+    padding: "13px 14px",
+    borderRadius: RADIUS.field,
+    border: "none",
     background: C.card,
     color: C.ink,
     outline: "none",
@@ -77,15 +77,15 @@ export default function QuickAdd({ accounts, transactions, addTransaction, onExi
       <style>{`${FONT_IMPORT} * { box-sizing: border-box; } html { color-scheme: light dark; } body { margin: 0; background: ${C.paper}; }`}</style>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
-        <div style={{ fontFamily: "'Fraunces', serif", fontWeight: 600, fontSize: 20, color: C.ink }}>Añadir movimiento</div>
+        <div style={{ fontFamily: HEADING_FONT, fontWeight: 600, fontSize: 20, color: C.ink }}>Añadir movimiento</div>
         <button
           onClick={onExit}
           title="Abrir app completa"
           style={{
-            border: `1px solid ${C.rule}`,
+            border: "none",
             background: C.card,
             color: C.inkSoft,
-            borderRadius: 6,
+            borderRadius: RADIUS.field,
             padding: 8,
             cursor: "pointer",
             display: "inline-flex",
@@ -102,9 +102,9 @@ export default function QuickAdd({ accounts, transactions, addTransaction, onExi
             alignItems: "center",
             gap: 8,
             background: C.incomeSoft,
-            border: `1px solid ${C.income}`,
+            border: "none",
             color: C.income,
-            borderRadius: 6,
+            borderRadius: RADIUS.field,
             padding: "10px 14px",
             fontSize: 13,
             fontWeight: 600,
@@ -134,9 +134,9 @@ export default function QuickAdd({ accounts, transactions, addTransaction, onExi
                     alignItems: "center",
                     gap: 6,
                     padding: "14px 6px",
-                    borderRadius: 8,
-                    border: `1.5px solid ${active ? t.tone : C.rule}`,
-                    background: active ? `${t.tone}18` : C.card,
+                    borderRadius: RADIUS.field,
+                    border: "none",
+                    background: active ? `${t.tone}22` : C.card,
                     color: active ? t.tone : C.inkSoft,
                     fontWeight: 600,
                     fontSize: 12.5,
@@ -204,7 +204,7 @@ export default function QuickAdd({ accounts, transactions, addTransaction, onExi
             background: C.ink,
             color: C.paper,
             border: "none",
-            borderRadius: 8,
+            borderRadius: RADIUS.field,
             padding: "15px 14px",
             fontFamily: "'IBM Plex Sans', sans-serif",
             fontWeight: 600,

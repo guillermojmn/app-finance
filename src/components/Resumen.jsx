@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { C, fmt, monthOf, CURRENCIES } from "../lib/theme.js";
+import { C, fmt, monthOf, CURRENCIES, HEADING_FONT, RADIUS } from "../lib/theme.js";
 import { Eyebrow, Stamp } from "./ui.jsx";
 
 export default function Resumen({ transactions, accounts, month, setMonth, displayCurrency, setDisplayCurrency, convert, ratesLoading }) {
@@ -32,7 +32,7 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>
           <Eyebrow>Cuenta de explotación</Eyebrow>
-          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
+          <h1 style={{ fontFamily: HEADING_FONT, fontSize: 26, fontWeight: 600, color: C.ink, margin: "2px 0 0" }}>
             Resumen del mes
           </h1>
         </div>
@@ -44,9 +44,9 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
             style={{
               fontFamily: "'IBM Plex Mono', monospace",
               fontSize: 13,
-              padding: "7px 10px",
-              borderRadius: 3,
-              border: `1px solid ${C.rule}`,
+              padding: "8px 12px",
+              borderRadius: RADIUS.field,
+              border: "none",
               background: C.card,
               color: C.ink,
             }}
@@ -59,9 +59,9 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
               style={{
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 13,
-                padding: "6px 8px",
-                borderRadius: 3,
-                border: `1px solid ${C.rule}`,
+                padding: "7px 10px",
+                borderRadius: RADIUS.field,
+                border: "none",
                 background: C.card,
                 color: C.ink,
               }}
@@ -87,7 +87,7 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
 
       <Stamp label="Patrimonio total (todas las cuentas)" value={patrimonio} tone="gold" big currency={displayCurrency} />
 
-      <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "18px 20px" }}>
+      <div style={{ background: C.card, borderRadius: RADIUS.card, padding: "20px 22px" }}>
         <Eyebrow>Gastos variables por categoría</Eyebrow>
         {byCategory.length === 0 ? (
           <p style={{ fontFamily: "'IBM Plex Sans', sans-serif", fontSize: 13, color: C.inkSoft, marginTop: 10 }}>
@@ -105,8 +105,8 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
                     {fmt(amt)} {displayCurrency}
                   </span>
                 </div>
-                <div style={{ background: C.paperDeep, borderRadius: 3, height: 8, overflow: "hidden" }}>
-                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 3 }} />
+                <div style={{ background: C.paperDeep, borderRadius: 6, height: 8, overflow: "hidden" }}>
+                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 6 }} />
                 </div>
               </div>
             ))}

@@ -1,4 +1,4 @@
-import { C, fmt, CURRENCY } from "../lib/theme.js";
+import { C, fmt, CURRENCY, RADIUS } from "../lib/theme.js";
 
 export function Eyebrow({ children }) {
   return (
@@ -6,7 +6,7 @@ export function Eyebrow({ children }) {
       style={{
         fontFamily: "'IBM Plex Sans', sans-serif",
         fontSize: 11,
-        letterSpacing: "0.14em",
+        letterSpacing: "0.1em",
         textTransform: "uppercase",
         color: C.inkSoft,
         fontWeight: 600,
@@ -20,21 +20,20 @@ export function Eyebrow({ children }) {
 export function Stamp({ label, value, tone = "ink", big, currency = CURRENCY }) {
   const color = tone === "income" ? C.income : tone === "expense" ? C.expense : tone === "gold" ? C.gold : C.ink;
   return (
-    <div style={{ background: C.card, border: `1px solid ${C.rule}`, borderRadius: 4, padding: "16px 18px" }}>
+    <div style={{ background: C.card, borderRadius: RADIUS.card, padding: "18px 20px" }}>
       <Eyebrow>{label}</Eyebrow>
       <div
         style={{
           fontFamily: "'IBM Plex Mono', monospace",
           fontVariantNumeric: "tabular-nums",
-          fontSize: big ? 28 : 22,
-          fontWeight: 600,
+          fontSize: big ? 32 : 24,
+          fontWeight: 700,
           color,
-          marginTop: 6,
-          paddingBottom: big ? 8 : 0,
-          borderBottom: big ? `3px double ${C.ruleStrong}` : "none",
+          marginTop: 8,
+          letterSpacing: "-0.01em",
         }}
       >
-        {fmt(value)} <span style={{ fontSize: big ? 14 : 12, fontWeight: 500, color: C.inkSoft }}>{currency}</span>
+        {fmt(value)} <span style={{ fontSize: big ? 15 : 12.5, fontWeight: 500, color: C.inkSoft }}>{currency}</span>
       </div>
     </div>
   );
@@ -49,16 +48,17 @@ export function TabButton({ active, onClick, icon: Icon, label, hint }) {
         alignItems: "center",
         gap: 10,
         width: "100%",
-        padding: "12px 16px",
+        padding: "11px 14px",
+        margin: "0 10px",
         border: "none",
-        background: active ? C.card : "transparent",
-        borderLeft: active ? `3px solid ${C.gold}` : "3px solid transparent",
+        borderRadius: RADIUS.field,
+        background: active ? C.paperDeep : "transparent",
         cursor: "pointer",
         textAlign: "left",
         fontFamily: "'IBM Plex Sans', sans-serif",
       }}
     >
-      <Icon size={17} color={active ? C.ink : C.inkSoft} />
+      <Icon size={17} color={active ? C.gold : C.inkSoft} />
       <div>
         <div style={{ fontSize: 13.5, fontWeight: 600, color: active ? C.ink : C.inkSoft }}>{label}</div>
         {hint && <div style={{ fontSize: 10.5, color: C.inkSoft }}>{hint}</div>}
@@ -76,10 +76,10 @@ export function TextField({ label, ...props }) {
         style={{
           fontFamily: props.type === "number" ? "'IBM Plex Mono', monospace" : "'IBM Plex Sans', sans-serif",
           fontSize: 13.5,
-          padding: "8px 10px",
-          borderRadius: 3,
-          border: `1px solid ${C.rule}`,
-          background: C.card,
+          padding: "9px 12px",
+          borderRadius: RADIUS.field,
+          border: "none",
+          background: C.paperDeep,
           color: C.ink,
           outline: "none",
         }}
@@ -97,10 +97,10 @@ export function SelectField({ label, options, ...props }) {
         style={{
           fontFamily: "'IBM Plex Sans', sans-serif",
           fontSize: 13.5,
-          padding: "8px 10px",
-          borderRadius: 3,
-          border: `1px solid ${C.rule}`,
-          background: C.card,
+          padding: "9px 12px",
+          borderRadius: RADIUS.field,
+          border: "none",
+          background: C.paperDeep,
           color: C.ink,
           outline: "none",
         }}
@@ -121,10 +121,10 @@ export function IconBtn({ onClick, title, danger, children }) {
       onClick={onClick}
       title={title}
       style={{
-        border: `1px solid ${danger ? C.expense : C.ruleStrong}`,
+        border: "none",
         background: danger ? C.expenseSoft : C.paperDeep,
         color: danger ? C.expense : C.ink,
-        borderRadius: 5,
+        borderRadius: RADIUS.field,
         padding: "8px 10px",
         cursor: "pointer",
         display: "inline-flex",
