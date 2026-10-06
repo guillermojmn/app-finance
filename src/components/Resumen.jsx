@@ -1,8 +1,10 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { C, fmt, monthOf, CURRENCIES, HEADING_FONT, RADIUS } from "../lib/theme.js";
 import { Eyebrow, Stamp } from "./ui.jsx";
 
 export default function Resumen({ transactions, accounts, month, setMonth, displayCurrency, setDisplayCurrency, convert, ratesLoading }) {
+  const [expanded, setExpanded] = useState(null);
   const monthTx = useMemo(() => transactions.filter((t) => monthOf(t.date) === month), [transactions, month]);
 
   const inDisplay = (t) => convert(t.amount, t.currency || "CHF", displayCurrency);
@@ -26,6 +28,23 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monthTx, displayCurrency]);
   const maxCat = Math.max(1, ...byCategory.map((c) => c[1]));
+
+  const byCategoryDetail = useMemo(() => {
+    const map = {};
+    monthTx
+      .filter((t) => t.type === "variable")
+      .forEach((t) => {
+        const key = t.category || "Sin categoría";
+        (map[key] = map[key] || []).push(t);
+      });
+    Object.values(map).forEach((arr) =>
+      arr.sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+        return (b.created_at || "").localeCompare(a.created_at || "");
+      })
+    );
+    return map;
+  }, [monthTx]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
@@ -95,21 +114,79 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
-            {byCategory.map(([cat, amt]) => (
-              <div key={cat} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-                  <span style={{ fontSize: 12.5, fontFamily: "'IBM Plex Sans', sans-serif", color: C.ink, fontWeight: 600 }}>
-                    {cat}
-                  </span>
-                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontVariantNumeric: "tabular-nums", fontSize: 12.5, color: C.ink }}>
-                    {fmt(amt)} {displayCurrency}
-                  </span>
+            {byCategory.map(([cat, amt]) => {
+              const isOpen = expanded === cat;
+              const items = byCategoryDetail[cat] || [];
+              return (
+                <div key={cat} style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(isOpen ? null : cat)}
+                    style={{
+                      display: "flex",
+                      alignItems: "baseline",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      cursor: "pointer",
+                      width: "100%",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 5,
+                        fontSize: 12.5,
+                        fontFamily: "'IBM Plex Sans', sans-serif",
+                        color: C.ink,
+                        fontWeight: 600,
+                      }}
+                    >
+                      {isOpen ? <ChevronDown size={14} color={C.inkSoft} /> : <ChevronRight size={14} color={C.inkSoft} />}
+                      {cat}
+                    </span>
+                    <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontVariantNumeric: "tabular-nums", fontSize: 12.5, color: C.ink }}>
+                      {fmt(amt)} {displayCurrency}
+                    </span>
+                  </button>
+                  <div style={{ background: C.paperDeep, borderRadius: 6, height: 8, overflow: "hidden" }}>
+                    <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 6 }} />
+                  </div>
+                  {isOpen && (
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                        marginTop: 4,
+                        paddingLeft: 19,
+                        borderLeft: `2px solid ${C.paperDeep}`,
+                      }}
+                    >
+                      {items.map((t) => {
+                        const converted = convert(t.amount, t.currency || "CHF", displayCurrency);
+                        const showConverted = (t.currency || "CHF") !== displayCurrency;
+                        return (
+                          <div key={t.id} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                            <span style={{ fontSize: 11.5, color: C.inkSoft, fontFamily: "'IBM Plex Sans', sans-serif" }}>
+                              <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t.date}</span> · {t.description}
+                            </span>
+                            <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: C.inkSoft, whiteSpace: "nowrap" }}>
+                              {fmt(t.amount)} {t.currency || "CHF"}
+                              {showConverted && ` (≈${fmt(converted)} ${displayCurrency})`}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
-                <div style={{ background: C.paperDeep, borderRadius: 6, height: 8, overflow: "hidden" }}>
-                  <div style={{ width: `${(amt / maxCat) * 100}%`, background: C.expense, height: "100%", borderRadius: 6 }} />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
