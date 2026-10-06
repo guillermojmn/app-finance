@@ -118,6 +118,15 @@ export default function App() {
     }, 1400);
   }
 
+  // Golpe de vibración al guardar. Safari/iOS no implementa esta API: ahí no hace nada (sin error).
+  function hapticTick() {
+    try {
+      navigator.vibrate?.(15);
+    } catch {
+      // ignorar
+    }
+  }
+
   // Positivo = ingreso a la cuenta, negativo = gasto de la cuenta.
   function txEffect(tx, accountCurrency) {
     const sign = tx.type === "income" ? 1 : -1;
@@ -144,6 +153,7 @@ export default function App() {
     setError(null);
     setTransactions((prev) => [data, ...prev]);
     markRecent(data.id);
+    hapticTick();
     if (data.account_id) {
       const account = accounts.find((a) => a.id === data.account_id);
       if (account) await applyBalanceAdjustments({ [data.account_id]: txEffect(data, account.currency) });
