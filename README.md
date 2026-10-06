@@ -1,105 +1,69 @@
-# Libro Mayor — gestor de gastos personal
+# Cuentas — gestor de gastos personal
 
-App independiente (React + Vite) para gastos fijos y variables, ingresos, ahorro
-y cuentas bancarias, con tu propia base de datos en Supabase para que se
-sincronice entre el móvil y el ordenador. Instalable en el móvil como app
-(PWA) desde el navegador.
+App para llevar el control de tus gastos fijos y variables, ingresos y
+cuentas bancarias, con tus datos sincronizados entre el móvil y el
+ordenador. Oscura por defecto, pensada para apuntar un gasto en segundos.
 
-## 1. Crear el proyecto en Supabase (gratis)
+**Úsala aquí:** https://guillermojmn.github.io/app-finance/
 
-1. Ve a https://supabase.com y crea una cuenta / proyecto nuevo.
-2. En el proyecto, ve a **SQL Editor > New query**, pega el contenido de
-   `supabase-schema.sql` y pulsa **Run**. Esto crea las tablas `accounts` y
-   `transactions`, con seguridad a nivel de fila (RLS) para que cada usuario
-   solo vea sus propios datos.
-3. Ve a **Project Settings > API**. Copia el **Project URL** y la
-   **anon public key** — los necesitas en el paso 3.
-4. Ve a **Authentication > URL Configuration** y añade en "Redirect URLs" la
-   URL donde vayas a usar la app (por ejemplo `http://localhost:5173` para
-   probar en local, y luego la URL definitiva una vez la despliegues).
+## Primeros pasos
 
-La app usa acceso por enlace mágico (escribes tu correo, te llega un enlace,
-entras) — no hay contraseñas que gestionar.
+1. Entra en la URL de arriba y pulsa **Crear cuenta** con tu correo y una
+   contraseña.
+2. (Opcional) Ve a la pestaña **Cuentas** y añade tus cuentas bancarias con
+   su saldo actual — sirve para ver tu patrimonio total y que cada
+   movimiento ajuste el saldo solo. No hace falta: puedes apuntar gastos e
+   ingresos sin asignarles ninguna cuenta.
+3. Ve a **Diario** y apunta tu primer movimiento: fecha, descripción,
+   tipo (ingreso / fijo / variable), categoría e importe.
+4. La pestaña **Resumen** se actualiza sola con lo que llevas ese mes:
+   ingresos, gastos, balance y patrimonio total.
 
-## 2. Configurar el proyecto
+## Cómo está pensada
 
-```bash
-npm install
-cp .env.example .env
-```
+- **Resumen** — foto del mes: ingresos, gastos fijos y variables, balance,
+  patrimonio total en todas tus cuentas, y el desglose de gastos variables
+  por categoría (toca una categoría para ver qué movimientos concretos la
+  componen).
+- **Diario** — todos tus movimientos. Puedes filtrar por tipo, ver solo el
+  mes actual o todo el histórico, y editar o borrar cualquier apunte. Si
+  escribes una descripción que ya usaste antes, autocompleta la categoría
+  sola. Y si ya apuntaste los gastos fijos de un mes, un botón te deja
+  copiarlos al mes siguiente con un toque.
+- **Cuentas** — tus cuentas bancarias, su saldo y el patrimonio total
+  convertido a la moneda que elijas (CHF, EUR, USD).
 
-Edita `.env` y rellena:
+## Trucos
 
-```
-VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
-VITE_SUPABASE_ANON_KEY=tu-anon-key
-```
+- **Modo oscuro/claro**: botón en el menú (PC) o arriba a la derecha
+  (móvil).
+- **Acceso directo para apuntar rápido**: entra en
+  `https://guillermojmn.github.io/app-finance/?quick=1` desde Safari o
+  Chrome en el móvil y usa "Añadir a pantalla de inicio" — te deja un icono
+  que abre directamente un formulario mínimo (tipo, importe, cuenta,
+  descripción), sin pasar por el resto de la app.
+- **Instalarla como app**: desde el navegador del móvil, "Añadir a
+  pantalla de inicio" (iOS/Safari) o "Instalar app" (Android/Chrome). Abre
+  a pantalla completa y usa los mismos datos que en el ordenador, porque
+  todo vive en la base de datos, no en el dispositivo.
+- Los importes aceptan coma o punto como separador decimal, da igual
+  cuál uses.
 
-Prueba en local:
+## Desarrollo
 
-```bash
-npm run dev
-```
-
-## 3. Desplegarla en GitHub Pages
-
-Ya incluye el workflow (`.github/workflows/deploy.yml`) que construye la app
-e inyecta tus claves de Supabase en cada `push`, usando GitHub Actions —
-no hace falta rama `gh-pages` manual ni build local.
-
-1. Crea un repositorio nuevo en GitHub (por ejemplo `libro-mayor`) y sube
-   esta carpeta:
-
-   ```bash
-   git init
-   git add .
-   git commit -m "Libro Mayor"
-   git branch -M main
-   git remote add origin https://github.com/TU-USUARIO/TU-REPO.git
-   git push -u origin main
-   ```
-
-2. En el repositorio: **Settings > Secrets and variables > Actions > New
-   repository secret**. Añade dos:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-
-   (los mismos valores que pusiste en tu `.env` local).
-
-3. En **Settings > Pages > Build and deployment > Source**, elige
-   **GitHub Actions**.
-
-4. Con eso ya está. El primer `push` a `main` dispara el workflow (pestaña
-   **Actions** del repo para ver el progreso) y en un par de minutos la app
-   queda publicada en:
-
-   ```
-   https://TU-USUARIO.github.io/TU-REPO/
-   ```
-
-5. Añade esa URL a **Authentication > URL Configuration > Redirect URLs**
-   en Supabase (paso 1.4) — si no, el enlace mágico de acceso no te
-   redirigirá de vuelta a la app.
-
-A partir de aquí, cualquier cambio que hagas en el código y subas a `main`
-se despliega solo. `vite.config.js` ya usa rutas relativas (`base: './'`),
-así que funciona tanto si el repo se sirve en la raíz de tu dominio como en
-una subruta tipo `/libro-mayor/` — no hay que tocar nada ahí.
-
-## 4. Instalarla en el móvil
-
-Abre la URL desplegada en Chrome (Android) o Safari (iOS) y usa
-"Añadir a pantalla de inicio" / "Instalar app". Queda con su propio icono,
-abre a pantalla completa, y funciona con los mismos datos que en el
-ordenador porque todo vive en Supabase, no en el dispositivo.
-
-## Estructura
+Para quien quiera tocar el código o desplegar su propia copia:
 
 ```
 src/
-  supabaseClient.js   cliente de Supabase (usa las variables de entorno)
+  supabaseClient.js   cliente de Supabase + reintento ante sesión caducada
   lib/theme.js         colores, tipografías y utilidades compartidas
-  components/          Login, Resumen, Diario, Cuentas, ui.jsx (piezas base)
+  components/          Login, Resumen, Diario, Cuentas, QuickAdd, ui.jsx
   App.jsx               autenticación + navegación + llamadas a Supabase
-supabase-schema.sql     tablas y políticas de seguridad para pegar en Supabase
+supabase-schema.sql     tablas y políticas de seguridad (RLS) para Supabase
 ```
+
+Necesita un proyecto de [Supabase](https://supabase.com) propio (tablas
+`accounts` y `transactions`, ver `supabase-schema.sql`) y las variables
+`VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` en un `.env` local y como
+secretos del repositorio para que el despliegue a GitHub Pages
+(`.github/workflows/deploy.yml`) funcione en cada `push` a `master`.
