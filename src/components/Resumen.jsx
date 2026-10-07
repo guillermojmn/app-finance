@@ -196,18 +196,18 @@ export default function Resumen({ transactions, accounts, month, setMonth, displ
 
       <CategoryBreakdown
         monthTx={monthTx}
-        type="fixed"
-        title="Gastos fijos por categoría"
-        emptyText="Aún no hay gastos fijos este mes."
+        type="variable"
+        title="Gastos variables por categoría"
+        emptyText="Aún no hay gastos variables este mes."
         displayCurrency={displayCurrency}
         convert={convert}
       />
 
       <CategoryBreakdown
         monthTx={monthTx}
-        type="variable"
-        title="Gastos variables por categoría"
-        emptyText="Aún no hay gastos variables este mes."
+        type="fixed"
+        title="Gastos fijos por categoría"
+        emptyText="Aún no hay gastos fijos este mes."
         displayCurrency={displayCurrency}
         convert={convert}
       />
