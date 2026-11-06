@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { C, fmt, monthOf, CURRENCIES, HEADING_FONT, RADIUS } from "../lib/theme.js";
+import { C, fmt, fmtDate, monthOf, CURRENCIES, HEADING_FONT, RADIUS } from "../lib/theme.js";
 import { Eyebrow, Stamp } from "./ui.jsx";
 
 function CategoryBreakdown({ monthTx, type, title, emptyText, displayCurrency, convert }) {
@@ -102,7 +102,7 @@ function CategoryBreakdown({ monthTx, type, title, emptyText, displayCurrency, c
                       return (
                         <div key={t.id} style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
                           <span style={{ fontSize: 11.5, color: C.inkSoft, fontFamily: "'IBM Plex Sans', sans-serif" }}>
-                            <span style={{ fontFamily: "'IBM Plex Mono', monospace" }}>{t.date}</span> · {t.description}
+                            <span style={{ fontWeight: 500 }}>{fmtDate(t.date, { year: false })}</span> · {t.description}
                           </span>
                           <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: C.inkSoft, whiteSpace: "nowrap" }}>
                             {fmt(t.amount)} {t.currency || "CHF"}

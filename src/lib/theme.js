@@ -96,6 +96,15 @@ export function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+const MONTHS_SHORT = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+
+// "2026-11-04" -> "4 nov 2026" (o "4 nov" sin año). Se parsea a mano para no depender de la zona horaria.
+export function fmtDate(dateStr, { year = true } = {}) {
+  const [y, m, d] = (dateStr || "").split("-").map(Number);
+  if (!y || !m || !d) return dateStr || "";
+  return `${d} ${MONTHS_SHORT[m - 1]}${year ? ` ${y}` : ""}`;
+}
+
 export function monthOf(dateStr) {
   return (dateStr || "").slice(0, 7);
 }

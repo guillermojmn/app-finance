@@ -4,6 +4,7 @@ import {
   C,
   fmt,
   todayISO,
+  fmtDate,
   monthOf,
   monthShift,
   daysInMonth,
@@ -468,7 +469,7 @@ export default function Diario({
             >
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 11.5, color: C.inkSoft }}>{t.date}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 500, color: C.inkSoft }}>{fmtDate(t.date)}</span>
                   <span
                     style={{
                       fontSize: 10.5,
