@@ -105,6 +105,15 @@ export function fmtDate(dateStr, { year = true } = {}) {
   return `${d} ${MONTHS_SHORT[m - 1]}${year ? ` ${y}` : ""}`;
 }
 
+const MONTHS_LONG = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+// "2026-11" -> "noviembre" (o "nov" con { short: true }).
+export function monthName(monthStr, { short = false } = {}) {
+  const m = Number((monthStr || "").slice(5, 7));
+  if (!m) return "";
+  return (short ? MONTHS_SHORT : MONTHS_LONG)[m - 1];
+}
+
 export function monthOf(dateStr) {
   return (dateStr || "").slice(0, 7);
 }
